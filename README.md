@@ -2,7 +2,7 @@
 
 Hackathon prototype. An animated guide dog sits on top of a patient portal, reads the page, and leads the user through it. It doesn't assume any one disability.
 
-- `index.html` is the pitch/landing page, with links to the three demo personas.
+- `index.html` is the pitch/landing page. It asks every visitor what helps them (icon tiles) and carries those choices into the portal.
 - `portal/` is **MyHealthLink**, a mock patient portal that is inaccessible on purpose: tiny mouse-only buttons, unlabeled fields, jargon, a hidden 4-minute session limit that erases your form, a mouse-only robot check, a scanned PDF, and a phone-only workflow.
 - `account/` holds Pawthfinder accounts: an accessible sign-in, a step-by-step sign-up where people pick their disabilities and needs as icon tiles, and a profile page with a **paste kit** (copy-ready text of their needs for any form).
 - `tests/` + `.claude/agents/disabled-user-tester.md` are the disabled-user test agent (see below).
@@ -24,9 +24,8 @@ Voice input needs Chrome or Edge, and the page must be served from `localhost` o
 | Link | What it shows |
 | --- | --- |
 | `portal/?pf=0&reset=1` | The portal without Pawthfinder ("before") |
-| `portal/?reset=1&mode=voice` | Sam: voice only |
-| `portal/?reset=1&mode=cognitive` | Riley: plain language, one step at a time, big targets |
-| `portal/?reset=1&mode=keyboard` | Alex: keyboard and screen reader |
+| `index.html#demo` | “What helps you?”: pick your own needs, then try the portal |
+| `portal/?reset=1` | Fresh start; the dog asks what helps you before anything else |
 | add `&session=45` | Makes the portal's timeout hit after 45 s, to demo the warning, keep-alive and restore |
 
 Any username and password work. Goals the planner understands: booking an appointment (with a type of doctor), refilling a medicine, and understanding test results.

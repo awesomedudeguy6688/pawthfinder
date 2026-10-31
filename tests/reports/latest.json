@@ -7,7 +7,7 @@
       "notes": [
         "Portal problems found by axe: 4 without Pawthfinder, 0 with it."
       ],
-      "started": 1793463727449,
+      "started": 1793467825632,
       "secs": 7
     },
     {
@@ -16,11 +16,11 @@
       "ok": true,
       "notes": [
         "Signed up with the keyboard only.",
-        "Copied from the paste kit: “I am blind or have low vision. The best way to reach me is alex1793463734465@example.com.…”",
+        "Copied from the paste kit: “I am blind or have low vision. The best way to reach me is alex1793467832433@example.com.…”",
         "Picker opened with 2 choices already picked from Alex’s account.",
         "16 keyboard actions; 37 screen-reader announcements."
       ],
-      "started": 1793463734406,
+      "started": 1793467832380,
       "secs": 19
     },
     {
@@ -33,7 +33,7 @@
         "“tick it” → Press “Submit Request”.",
         "“press it” → Done! Your appointment request was sent. The clinic still has to appro"
       ],
-      "started": 1793463753577,
+      "started": 1793467851714,
       "secs": 11
     },
     {
@@ -46,8 +46,8 @@
         "17 different instructions; longest 21 words; average grade 2.9.",
         "Confirmation page at “Simplest”: 54 words, grade 6.9."
       ],
-      "started": 1793463764559,
-      "secs": 48
+      "started": 1793467863157,
+      "secs": 49
     },
     {
       "name": "Morgan uses the app at 200% zoom with bigger text and strong contrast",
@@ -57,7 +57,7 @@
         "Had to scroll to find Start in the picker.",
         "Panel docks at the bottom (207px of 450px tall); 54% of the view is left for the website."
       ],
-      "started": 1793463812862,
+      "started": 1793467912219,
       "secs": 3
     }
   ],

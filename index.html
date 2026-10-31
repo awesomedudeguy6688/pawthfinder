@@ -5,6 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Pawthfinder — a guide dog for medical websites</title>
 <meta name="description" content="A browser extension with an animated guide dog that leads disabled users through patient portals: plain language, hazard warnings, voice, keyboard and step-by-step guidance.">
+<link rel="stylesheet" href="pawthfinder/pawthfinder.css">
 <link rel="stylesheet" href="site.css">
 </head>
 <body>
@@ -18,8 +19,8 @@
       <li><a href="#demo">Demo</a></li>
       <li><a href="#skills">Skills</a></li>
       <li><a href="#how">How it works</a></li>
-      <li><a href="account/login.html">Sign in</a></li>
-      <li><a class="nav-cta" href="account/signup.html">Make an account</a></li>
+      <li class="nav-acct"><a href="account/login.html">Sign in</a></li>
+      <li class="nav-acct"><a class="nav-cta" href="account/signup.html">Make an account</a></li>
     </ul>
   </nav>
 </header>
@@ -67,34 +68,23 @@
   </section>
 
   <section id="demo" class="wrap section">
-    <h2>One portal. One goal. Three different people.</h2>
-    <p class="section-lede">We built <strong>MyHealthLink</strong>, a mock patient portal with those barriers built in on purpose. The goal in every demo is the same: <em>“Book a follow-up with my cardiologist.”</em> Pick who you want to be:</p>
-    <div class="personas">
-      <article class="persona">
-        <div class="p-icon" aria-hidden="true">🎤</div>
-        <h3>Sam uses voice only</h3>
-        <p>Sam can’t use a mouse or keyboard. Pawthfinder talks Sam through each step and acts on commands like <q>press it</q>, <q>choose Dr. Patel</q> or <q>type follow-up visit</q>.</p>
-        <a class="btn primary" href="portal/?reset=1&amp;mode=voice">Start as Sam</a>
-        <p class="hint">Works best in Chrome or Edge with a microphone. You can also type the commands.</p>
-      </article>
-      <article class="persona">
-        <div class="p-icon" aria-hidden="true">🌿</div>
-        <h3>Riley has brain-fog days</h3>
-        <p>Riley needs plain words and small steps. Pawthfinder rewrites the jargon, shows one step at a time, makes the buttons big, and offers rest stops that save Riley’s place.</p>
-        <a class="btn primary" href="portal/?reset=1&amp;mode=cognitive">Start as Riley</a>
-      </article>
-      <article class="persona">
-        <div class="p-icon" aria-hidden="true">⌨️</div>
-        <h3>Alex uses a keyboard and a screen reader</h3>
-        <p>Alex can’t use the portal’s mouse-only buttons or unlabeled boxes. Pawthfinder fixes them, moves focus to each step, and announces it to the screen reader.</p>
-        <a class="btn primary" href="portal/?reset=1&amp;mode=keyboard">Start as Alex</a>
-      </article>
+    <h2>What helps you use websites?</h2>
+    <p class="section-lede">Pawthfinder doesn’t guess, and it doesn’t put you in a box. Tell it what you need. Pick as many as you like, or none. Then try it on <strong>MyHealthLink</strong>, a mock patient portal with real-world barriers built in on purpose.</p>
+    <div class="pf-ui needs-pick">
+      <div class="pf-tiles" id="needs-tiles" role="group" aria-label="What helps you"></div>
+      <p class="needs-count" id="needs-count" aria-live="polite">Nothing picked yet. That’s fine too.</p>
+      <div class="needs-actions">
+        <button type="button" class="btn primary" id="needs-go">Try the portal with my choices <span aria-hidden="true">🐾</span></button>
+        <button type="button" class="btn" id="needs-save">Save them in a free account</button>
+      </div>
+      <p class="hint">Your choices stay on this device. You can change them any time in the dog’s <em>Stay close</em> tab. Voice control works best in Chrome or Edge with a microphone.</p>
     </div>
     <details class="tips">
       <summary>Tips for running the demo</summary>
       <ul>
         <li>Any username and password work on the mock portal.</li>
-        <li>Add <code>&amp;session=45</code> to a demo link to make the portal’s hidden timeout hit after 45 seconds. Watch Pawthfinder warn you, keep you signed in, or put your answers back.</li>
+        <li>Open <code>portal/?reset=1&amp;session=45</code> to make the portal’s hidden timeout hit after 45 seconds. Watch Pawthfinder warn you, keep you signed in, or put your answers back.</li>
+        <li>To show different needs, pick different tiles above, or open <code>portal/?reset=1</code> and answer the dog’s question each time.</li>
         <li>Toggle <strong>“See this site without Pawthfinder”</strong> in the dog’s <em>Stay close</em> tab for an instant before-and-after.</li>
         <li>Other goals to try: <q>Refill my cholesterol medicine</q> and <q>Understand my test results</q>.</li>
         <li>Shortcuts: <kbd>Alt</kbd>+<kbd>Shift</kbd>+<kbd>N</kbd> goes to the current step, <kbd>Alt</kbd>+<kbd>Shift</kbd>+<kbd>R</kbd> repeats it.</li>
@@ -150,6 +140,40 @@
 </footer>
 
 <script src="pawthfinder/dog.js"></script>
-<script>document.getElementById('hero-dog').innerHTML = window.PF_DOG_SVG;</script>
+<script src="pawthfinder/needs.js"></script>
+<script>
+  document.getElementById('hero-dog').innerHTML = window.PF_DOG_SVG;
+  // Ask everyone what helps them, then carry their choices into the portal.
+  (function () {
+    var N = window.PF_NEEDS, box = document.getElementById('needs-tiles'), count = document.getElementById('needs-count');
+    var read = function (k, d) { try { var v = localStorage.getItem(k); return v ? JSON.parse(v) : d; } catch (e) { return d; } };
+    var picked = (read('pf-settings', {}).needs || []).slice();
+    box.innerHTML = N.features.map(function (f) {
+      return '<button type="button" class="pf-tile" data-need="' + f.id + '" aria-pressed="false"><span class="pf-tile-icon" aria-hidden="true">' + f.icon +
+        '</span><span class="pf-tile-label">' + f.label + '</span><span class="pf-tile-desc">' + f.desc + '</span></button>';
+    }).join('');
+    function render() {
+      box.querySelectorAll('[data-need]').forEach(function (b) { b.setAttribute('aria-pressed', String(picked.indexOf(b.dataset.need) >= 0)); });
+      count.textContent = picked.length ? 'You picked ' + picked.length + ': ' + N.features.filter(function (f) { return picked.indexOf(f.id) >= 0; }).map(function (f) { return f.label.toLowerCase(); }).join(', ') + '.' : 'Nothing picked yet. That’s fine too.';
+    }
+    box.addEventListener('click', function (e) {
+      var b = e.target.closest('[data-need]');
+      if (!b) return;
+      var i = picked.indexOf(b.dataset.need);
+      if (i >= 0) picked.splice(i, 1); else picked.push(b.dataset.need);
+      render();
+    });
+    function keep() {
+      // Start a fresh demo, but with these needs already set, so the portal doesn't ask again.
+      ['pf-plan', 'pf-form', 'pf-rest', 'pf-appt', 'pf-letter'].forEach(function (k) { localStorage.removeItem(k); });
+      sessionStorage.removeItem('mhl');
+      localStorage.setItem('pf-settings', JSON.stringify(N.settingsFor(picked, read('pf-settings', {}))));
+      sessionStorage.setItem('pf-onboarded', '1');
+    }
+    document.getElementById('needs-go').addEventListener('click', function () { keep(); location.href = 'portal/'; });
+    document.getElementById('needs-save').addEventListener('click', function () { keep(); location.href = 'account/signup.html?return=portal'; });
+    render();
+  })();
+</script>
 </body>
 </html>

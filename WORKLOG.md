@@ -2,6 +2,91 @@
 
 Changes and problems, newest round first. Kept up to date while working.
 
+## Round 7: no personas, ask everyone
+
+### Changes
+- **Removed the Sam / Riley / Alex presets completely:** the three "Start as…" buttons on the landing page, the `?mode=voice|cognitive|keyboard` links, and the preset code inside the extension. Nobody gets put into a ready-made profile any more.
+- **Every visitor is asked what helps them:**
+  - The landing page's demo section is now "What helps you use websites?", with the same 12 icon tiles. Choices carry into the portal (no second question), or into sign-up with *Save them in a free account*.
+  - Anyone arriving at the portal any other way gets the session-start picker, now with **🎤 Answer by voice** next to *Read this to me*. If the microphone was allowed before, it listens straight away, then switches off again unless the person picked "I talk instead of typing".
+- Voice commands now match the everyday words for each button as well as the site's own wording ("open appointments" finds *Encounter Mgmt*), whatever reading level is on.
+- `?reset=1` always asks again.
+- The tests now answer the picker the way each person would, instead of using presets. Sam, Riley, Alex and Morgan remain only as characters in the test scripts.
+- **Tests:** voice 153/153, voice-only booking ✅, persona tests 0 blockers, 0 major, 1 minor.
+
+### Problems
+- Without the voice preset (which used to switch on plain words), "open appointments" stopped finding *Encounter Mgmt*. Fixed by matching plain-language names too.
+- The "already asked this session" flag survived `?reset=1`. Fixed.
+
+## Round 6: voice-only navigation
+
+### Changes
+- **Performance pass (JS/HTML only, no CSS):** slow-device medians, A/B interleaved against the same code with only these edits undone.
+  - `portal/index.html`: a small head script preloads the extension's CSS and scripts (skipped for `?pf=0`), so they download alongside `portal.js`. Load 1149 → 966 ms, picker on screen 1361 → 1173 ms, largest paint 1236 → 1040 ms. Same requests and bytes.
+  - `pawthfinder.js` `schedule()`: a portal page change reacts after 16 ms instead of 120 ms. Typing still waits 120 ms. Page change → next step 193 → 86 ms.
+  - `renderHazards()`: the 1-second timer used to rebuild the whole Sniff ahead pane because the countdown text changed. It now updates the text in place and rebuilds only when the hazards change. That also stops keyboard focus on "Keep me signed in" being thrown to the page every second. Idle CPU with the pane open: 401 → 369 ms per 10 s.
+  - `repair()`: measures all fields before inserting labels. Forced layouts on the request form drop from 11–13 to 7–9; the time saved is small.
+  - Persona tests unchanged: 0 blockers, 0 major, 1 minor. Most remaining idle CPU is CSS animation (the SVG tail wag, the ring's border-color glow). Recommendations are in the performance report for the CSS owner.
+- **New speech understanding** in `pawthfinder/voice.js`, kept separate from page code and unit-tested:
+  - Cleans up speech: drops the wake word and filler ("um", "can you please"), and fixes common mishearings ("necks" → next, "take it" → tick it).
+  - Reads numbers and times ("nine forty", "one pm", "seven oh five"), and spelling: letters, "x-ray zulu", "at", "dot", "capital".
+  - Fuzzy-matches what you said to what's on screen ("encounter management" → *Encounter Mgmt*, "doctor patel" → *PATEL, ANITA R MD FACC*).
+  - Understands about 60 kinds of request, each in several everyday phrasings.
+- **More precise microphone** (`pawthfinder.js`):
+  - Shows words live as they're heard, and weighs 5 alternatives to pick the one that makes sense on this page. Uses Chrome's on-screen-word biasing where available.
+  - Asks "Did you say…?" before acting on low-confidence speech.
+  - Ignores its own voice through the speakers, but lets you talk over it.
+  - Restarts on its own after silence, with a back-off, and gives clear help for a blocked or missing microphone or no network.
+- **No typing needed:**
+  - Press anything by name ("click sign in", "open appointments").
+  - "Show numbers", then say a number.
+  - Type, spell, or use dictation mode ("start dictation" … "stop dictation", "new line", "delete that", "clear it"), or "type my phone number / insurance number" straight from the profile.
+  - Choose options, times and radio buttons; tick boxes; scroll; go back or home; open tabs; hide or show the panel.
+  - Change any setting by voice ("bigger", "slower", "simpler", "keep me signed in").
+  - The session-start picker works by voice too ("bigger text", "start").
+  - If the microphone is already allowed, the dog starts listening on its own.
+- **Help:**
+  - "help" / "I'm stuck" explain the current step and exactly what to say next. A "What you can say" card is in the Lead tab.
+  - Answers questions: "when is my appointment", "who is my doctor", "what does ABN mean", "how long until I'm signed out", "I can't make phone calls", "I need an interpreter", "is my information safe".
+  - When it doesn't understand, it suggests the closest commands.
+- **Tests:**
+  - `npm run test:voice`: 153 phrasings → intents.
+  - `npm run test:voice-e2e`: a full booking by voice alone, through a simulated microphone. Passes.
+  - Persona tests unchanged: 0 blockers, 0 major, 1 minor.
+
+### Problems
+- Waited for another run to stop editing `pawthfinder.js` before wiring voice in, so the two wouldn't overwrite each other.
+- The end-to-end test found 3 bugs, all fixed:
+  - Text went into the previous box instead of the current step's box.
+  - "Insurance number" was read as the phone number.
+  - Everything said while the dog was talking was ignored. It now separates its own echo from the user talking over it.
+- Limits: browsers need one click before the first microphone use or spoken reply, so fully hands-free use from the very first visit needs OS voice control (Voice Access, Voice Control, Dragon). Real speech recognition can't be tested headless; the pipeline was tested with a simulated microphone.
+
+## Round 5: no presets, account prompt
+
+### Changes
+- **Modern look, second pass (CSS only):**
+  - One system UI font stack (`--font-sans` in site.css, `--pf-font` in pawthfinder.css; no downloads). Dyslexia mode swaps the font variable and turns heading letter-spacing positive, so the person's font and spacing win everywhere, including header buttons.
+  - Headings are heavier (750–800) with slightly tighter letter-spacing and fluid `clamp()` sizes. Body text is capped at about 65–70 characters per line, and numbers that line up use `tabular-nums`.
+  - Pill buttons, chips and command box. Radius tokens (16, 22 and 999px), more space between sections, a frosted sticky header with a paw badge, a segmented tab tray in the panel, and 1px card borders with soft shadows. Strong-contrast versions included.
+  - The command box border is now `#8a7f6c` (about 4:1; it was about 2:1 against white).
+  - Georgia appears only in `portal/portal.css`, left alone on purpose.
+- **Visual polish (HTML/CSS only):**
+  - Fixed an invalid `font: 600 .9em inherit` shorthand that browsers dropped. Panel buttons, tabs and chips, plus the account pages' buttons and "Keep me signed in" toggle, were stuck at about 13px, even in big-text mode. They now follow the page size.
+  - Fixed a stray box around the current step in the Lead step list; it now has a soft amber highlight. Big-text mode no longer strips padding and centering from link buttons on the profile page.
+  - Landing page: shadows and an 8px spacing rhythm on the cards, emoji icon badges, a warm glow behind the hero dog, and 48px buttons. "Sign in" and "Make an account" stay in the header below 900px, and the header stops being sticky below 560px.
+  - Sign-in form now sits on a card. Done sign-up steps get a check badge, so their state isn't shown by color alone. The "What you told us" cards line up their Change buttons.
+  - Panel: header gradient with an amber edge, tab and tile hover feedback, a gentle picker entrance, and a `prefers-reduced-motion` fallback in pawthfinder.css.
+  - Findings: F8 (the badge showed "0"), F12 (check mark included in tile names) and F15 (landing scrolled sideways at 342px) are fixed. F6 is fixed for the bubble only (capped at 250px to match the JS clamp). Also fixed the portal login and inputs overflowing under big text at 342px, and the sign-up h1 overflowing with the dyslexia font.
+  - Couldn't do in CSS: keeping the current step visible in the 400% bottom sheet, which needs JS to scroll or collapse it. Also "1 warnings" pluralization, and measuring the bubble width instead of assuming 250px.
+- Removed the preset buttons (Voice / Simple & steady / Keyboard & screen reader) from the top of the Pawthfinder panel. Choices now come from the account and the session-start picker. The `?mode=` demo links still work.
+- *Stay close* says where choices come from ("from your account", or "make an account to have these ready").
+- **Account prompt** for signed-out users: a friendly notice right after the session-start picker, and again after finishing a task. Its buttons are *Make my free account*, *I already have one* and *Not now*. Shown at most twice per session; *Not now* stops it for the session. The dog keeps your place while you sign up.
+- Sign-up now starts with the website needs you already picked in the session.
+
+### Problems
+- Other agent runs (visual polish, performance, disabled-user tester) were editing the same files at the same time. My changes stayed intact. Everything was committed together in round 7, after those runs finished and all tests passed.
+
 ## Round 4: performance agent
 
 ### Changes

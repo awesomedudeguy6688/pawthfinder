@@ -4,6 +4,20 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=1024">
 <title>MyHealthLink</title>
+<script>
+  // Start downloading Pawthfinder now, alongside the portal's own files, instead of after
+  // portal.js has run. The loader at the bottom of the page still decides when it runs.
+  if (new URLSearchParams(location.search).get('pf') !== '0') {
+    [['../pawthfinder/pawthfinder.css', 'style'], ['../pawthfinder/dog.js', 'script'], ['../pawthfinder/knowledge.js', 'script'],
+     ['../pawthfinder/needs.js', 'script'], ['../pawthfinder/voice.js', 'script'], ['../pawthfinder/pawthfinder.js', 'script']].forEach(function (f) {
+      var l = document.createElement('link');
+      l.rel = 'preload';
+      l.href = f[0];
+      l.as = f[1];
+      document.head.appendChild(l);
+    });
+  }
+</script>
 <link rel="stylesheet" href="portal.css">
 </head>
 <body>
@@ -23,7 +37,7 @@
     css.rel = 'stylesheet';
     css.href = '../pawthfinder/pawthfinder.css';
     document.head.appendChild(css);
-    ['../pawthfinder/dog.js', '../pawthfinder/knowledge.js', '../pawthfinder/needs.js', '../pawthfinder/pawthfinder.js'].forEach(function (src) {
+    ['../pawthfinder/dog.js', '../pawthfinder/knowledge.js', '../pawthfinder/needs.js', '../pawthfinder/voice.js', '../pawthfinder/pawthfinder.js'].forEach(function (src) {
       var s = document.createElement('script');
       s.src = src;
       s.async = false;

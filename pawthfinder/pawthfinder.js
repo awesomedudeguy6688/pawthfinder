@@ -16,35 +16,18 @@
   };
   if (q.get('reset') === '1') {
     ['settings', 'profile', 'plan', 'form', 'rest', 'appt', 'letter'].forEach(store.del);
+    try { sessionStorage.removeItem('pf-onboarded'); } catch (e) { /* private mode */ }
     q.delete('reset');
     history.replaceState(null, '', location.pathname + (q.toString() ? '?' + q : '') + location.hash);
   }
 
-  const PRESETS = {
-    voice: {
-      label: 'Voice', icon: '🎤',
-      desc: 'I talk you through each step and listen for commands like “next”, “press it” or “type …”.',
-      needs: ['voice', 'readAloud', 'sounds'], extra: { level: 1 }
-    },
-    cognitive: {
-      label: 'Simple & steady', icon: '🌿',
-      desc: 'Plain words, one small step at a time, bigger buttons. Take a rest stop whenever you like.',
-      needs: ['plain', 'oneStep', 'large'], extra: {}
-    },
-    keyboard: {
-      label: 'Keyboard & screen reader', icon: '⌨️',
-      desc: 'I fix unlabeled boxes and mouse-only buttons, move focus to each step and announce it to your screen reader.',
-      needs: ['keyboard', 'screenReader', 'sounds'], extra: { level: 1 }
-    }
-  };
   const DEFAULTS = {
-    preset: 'custom', speak: false, listen: false, sounds: false, haptic: false, captions: true,
+    speak: false, listen: false, sounds: false, haptic: false, captions: true,
     level: 0, oneStep: false, large: false, hc: false, dys: false,
     rm: matchMedia('(prefers-reduced-motion: reduce)').matches,
     repair: true, focusFollow: false, keepAlive: false, rate: 1, collapsed: false, needs: []
   };
   const N = window.PF_NEEDS;
-  const presetSettings = (name, current) => Object.assign(N.settingsFor(PRESETS[name].needs, current), PRESETS[name].extra, { preset: name });
   const DEMO_PROFILE = {
     name: 'Jordan Rivera', username: 'jrivera', dob: '1984-03-09', memberId: 'XZP448120977',
     phone: '555-014-2290', email: 'jordan.rivera@example.com',
@@ -309,9 +292,6 @@
         <button type="button" class="pf-btn pf-rest-btn">Rest stop</button>
         <button type="button" class="pf-icon pf-collapse" aria-label="Hide Pawthfinder panel" title="Hide (Alt+Shift+H)">✕</button>
       </header>
-      <div class="pf-presets" role="group" aria-label="How do you like to use websites?">
-        ${Object.entries(PRESETS).map(([k, p]) => `<button type="button" class="pf-preset" data-preset="${k}" aria-pressed="false"><span aria-hidden="true">${p.icon}</span> ${p.label}</button>`).join('')}
-      </div>
       <div class="pf-tabs" role="tablist" aria-label="Pawthfinder skills">
         ${[['lead', 'Lead'], ['sniff', 'Sniff ahead'], ['translate', 'Translate'], ['fetch', 'Fetch'], ['speak', 'Speak up'], ['settings', 'Stay close']]
           .map(([k, l], n) => `<button type="button" role="tab" id="pf-tab-${k}" aria-controls="pf-pane-${k}" aria-selected="${n === 0}" tabindex="${n === 0 ? 0 : -1}" data-tab="${k}">${l}${k === 'sniff' ? ' <span class="pf-badge" hidden></span>' : ''}</button>`).join('')}
@@ -332,6 +312,10 @@
             </div>
           </form>
           <div class="pf-heard" aria-live="polite"></div>
+          <details class="pf-saycard">
+            <summary>What you can say <small>(or type)</small></summary>
+            ${Object.entries(window.PF_VOICE.EXAMPLES).map(([g, list]) => `<h4>${g}</h4><p>${list.map(x => `“${x}”`).join(' · ')}</p>`).join('')}
+          </details>
           <div class="pf-notices"></div>
           <div class="pf-lead"></div>
         </section>
@@ -395,7 +379,7 @@
           </div>
         </section>
         <section class="pf-pane" role="tabpanel" id="pf-pane-settings" aria-labelledby="pf-tab-settings" hidden>
-          <p class="pf-help pf-preset-desc"></p>
+          <p class="pf-help pf-needs-desc"></p>
           <p class="pf-account-line"></p>
           <h3 class="pf-h3" id="pf-needs-h">What helps you?</h3>
           <div class="pf-tiles pf-tiles-sm" role="group" aria-labelledby="pf-needs-h">${needTiles()}</div>
@@ -417,7 +401,7 @@
             <li><kbd>Alt</kbd>+<kbd>Shift</kbd>+<kbd>H</kbd> hide or show this panel</li>
           </ul>
           <h3 class="pf-h3">Voice commands</h3>
-          <p class="pf-help">“next” · “show me” · “press it” · “type …” · “choose …” · “tick it” · “read this” · “simpler” · “summarize” · “take a break” · “I’m back” · “stop”</p>
+          <p class="pf-help">Say “help” any time, or open “What you can say” in the Lead tab. Say “show numbers” to put a number on everything you can press.</p>
           <p class="pf-help"><a href="?pf=0${location.hash}">See this site without Pawthfinder</a> · <a href="?reset=1">Reset the demo</a></p>
         </section>
       </div>
@@ -431,7 +415,10 @@
             <p id="pf-ob-desc">Pick everything that helps — or nothing at all. You can change this any time.</p>
             <p class="pf-ob-who"></p>
           </div>
-          <button type="button" class="pf-btn pf-ob-read"><span aria-hidden="true">🔊</span> Read this to me</button>
+          <div class="pf-ob-voice">
+            <button type="button" class="pf-btn pf-ob-read"><span aria-hidden="true">🔊</span> Read this to me</button>
+            <button type="button" class="pf-btn pf-ob-listen" aria-pressed="false"><span aria-hidden="true">🎤</span> Answer by voice</button>
+          </div>
         </div>
         <div class="pf-tiles pf-ob-tiles" role="group" aria-label="What helps you">${needTiles()}</div>
         <div class="pf-ob-foot">
@@ -480,6 +467,8 @@
     const u = new SpeechSynthesisUtterance(text);
     u.rate = settings.rate;
     u.lang = 'en-US';
+    voice.speakingText = (interrupt ? '' : voice.speakingText + ' ') + text;
+    u.onend = u.onerror = () => { voice.ttsEnd = Date.now(); if (!speechSynthesis.pending) voice.speakingText = ''; };
     speechSynthesis.speak(u);
   }
   function say(text, opts = {}) {
@@ -637,6 +626,7 @@
 
   function onStepChange(cur, prevPage) {
     const s = cur.step;
+    if (!voice.dictating) voice.field = null;
     const text = stepText(s);
     if (s.final && !plan.complete) {
       plan.complete = true;
@@ -645,6 +635,7 @@
       dogMood('happy');
       yay();
       buzz([60, 40, 60, 40, 120]);
+      setTimeout(() => promptAccount('done'), 1500);
     } else {
       dogMood(cur.reroute ? 'alert' : 'sniff', 900);
       chime();
@@ -725,35 +716,59 @@
     setValue(t, text);
     say(`I typed “${t.type === 'password' ? '•'.repeat(text.length) : text}”. Say “next” when you’re ready.`);
   }
-  function chooseIt(what) {
-    const w = what.toLowerCase().replace(/^(the|a)\s+/, '');
-    const t = state.target;
-    if (t && t.tagName === 'SELECT') {
-      const opt = [...t.options].find(o => o.value && (origText(o).toLowerCase().includes(w) || norm(o.textContent).toLowerCase().includes(w)));
-      if (!opt) { say(`I couldn’t find “${what}”. The choices are: ${[...t.options].filter(o => o.value).map(o => norm(o.textContent)).join(', ')}.`); return; }
-      t.value = opt.value;
-      t.dispatchEvent(new Event('change', { bubbles: true }));
-      say(`Chose ${norm(opt.textContent)}.`);
+  const ORDINAL = { first: 0, second: 1, third: 2, fourth: 3, fifth: 4, last: -1 };
+  function chooseIt(what, time) {
+    const w = what.toLowerCase().replace(/^(the|a|an)\s+/, '').replace(/\s+(one|option)$/, '');
+    const ord = ORDINAL[w];
+    const pickFrom = (items, names) => {
+      if (ord != null) return items[ord < 0 ? items.length - 1 : ord] || null;
+      const hit = V.bestMatch(w, items.map(x => ({ x, names: names(x) })));
+      return hit && hit.score >= 0.55 ? hit.item.x : null;
+    };
+    let sel = state.target && state.target.tagName === 'SELECT' ? state.target : null;
+    if (!sel) {
+      // Any drop-down on the page that has a matching option.
+      sel = F.fields().filter(f => f.tagName === 'SELECT' && !f.disabled).find(f => pickFrom([...f.options].filter(o => o.value), o => [origText(o), norm(o.textContent)]));
+    }
+    if (sel) {
+      const opts = [...sel.options].filter(o => o.value);
+      const opt = pickFrom(opts, o => [origText(o), norm(o.textContent)]);
+      if (!opt) { say(`I couldn’t find “${what}”. The choices are: ${opts.map(o => norm(o.textContent)).join(', ')}.`, { forceSpeak: settings.listen }); return; }
+      sel.value = opt.value;
+      sel.dispatchEvent(new Event('change', { bubbles: true }));
+      say(`Chose ${norm(opt.textContent)}.`, { ms: 3000 });
       return;
     }
-    if (state.page === 'slots') {
-      const times = $$('[data-pf-click]', portal).filter(x => /^\d{2}:\d{2}$/.test(origText(x)));
-      const m = w.match(/(\d{1,2})(?::|\s)?(\d{2})?/);
-      const slot = /first|earliest|soonest/.test(w) ? times[0]
-        : m ? times.find(x => origText(x) === `${m[1].padStart(2, '0')}:${m[2] || '00'}`) : null;
-      if (!slot) { say(`I couldn’t find that time. Open times are: ${times.map(origText).join(', ')}.`); return; }
+    const times = $$('[data-pf-click]', portal).filter(x => /^\d{2}:\d{2}$/.test(origText(x)));
+    if (times.length) {
+      const t = time || V.spokenTime(w);
+      const slot = /first|earliest|soonest/.test(w) ? times[0] : /last|latest/.test(w) ? times[times.length - 1]
+        : t ? times.find(x => origText(x) === t.exact) || (t.alt && times.find(x => origText(x) === t.alt)) : null;
+      if (!slot) { say(`I couldn’t find that time. Open times are: ${times.map(origText).join(', ')}.`, { forceSpeak: settings.listen }); return; }
       slot.click();
+      say(`Picked ${origText(slot)}.`, { ms: 3000 });
       return;
     }
-    const radio = F.fields().find(x => x.type === 'radio' && (sibText(x).toLowerCase().includes(w) || rewrite(sibText(x), 1).toLowerCase().includes(w)));
-    if (radio) { radio.click(); return; }
-    say('There’s nothing to choose right now.');
+    const radios = F.fields().filter(x => x.type === 'radio');
+    const radio = radios.length && pickFrom(radios, x => [sibText(x), rewrite(sibText(x), 1), rewrite(sibText(x), 2)]);
+    if (radio) { radio.click(); say(`Chose “${rewrite(sibText(radio), 1)}”.`, { ms: 3000 }); return; }
+    say('There’s nothing to choose right now.', { forceSpeak: settings.listen });
   }
-  function tickIt() {
-    const t = state.target;
-    if (t && (t.type === 'checkbox' || t.type === 'radio')) { t.click(); say(t.checked ? 'Ticked.' : 'Unticked.'); return; }
-    if (t && state.cur && state.cur.step.kind === 'press') { t.click(); return; }
-    say('There’s no box to tick right now.');
+  function tickIt(on = true) {
+    let t = state.target;
+    const isBox = x => x && (x.type === 'checkbox' || x.type === 'radio' || x.getAttribute('role') === 'checkbox');
+    if (!isBox(t)) {
+      const boxes = F.fields().filter(x => x.type === 'checkbox').concat($$('[role=checkbox]', portal));
+      t = boxes.length === 1 ? boxes[0] : null;
+    }
+    if (t) {
+      const checked = t.type ? t.checked : t.getAttribute('aria-checked') === 'true' || /✓/.test(t.textContent);
+      if (checked !== on) t.click();
+      say(on ? 'Ticked.' : 'Unticked.', { ms: 2500 });
+      return;
+    }
+    if (state.target && state.cur && state.cur.step.kind === 'press') { state.target.click(); return; }
+    say('There’s no box to tick right now.', { forceSpeak: settings.listen });
   }
   function setValue(t, v) {
     const proto = t.tagName === 'TEXTAREA' ? HTMLTextAreaElement.prototype : HTMLInputElement.prototype;
@@ -817,11 +832,15 @@
   const stats = { labels: 0, buttons: 0, tiny: 0 };
   function repair() {
     stats.labels = 0; stats.buttons = 0; stats.tiny = 0;
-    for (const f of F.fields()) {
+    // Measure every field before adding any labels: reading a size right after inserting a label
+    // forces a fresh layout, once per field.
+    const fields = F.fields();
+    const heights = fields.map(f => f.getBoundingClientRect().height);
+    fields.forEach((f, i) => {
       const native = [...(f.labels || [])].some(l => !l.classList.contains('pf-label')) || (f.getAttribute('aria-label') && !f.dataset.pfLabeled) || f.getAttribute('aria-labelledby');
       if (!native) stats.labels++;
-      if (f.getBoundingClientRect().height < 24) stats.tiny++;
-      if (native || !settings.repair || f.dataset.pfLabeled) continue;
+      if (heights[i] < 24) stats.tiny++;
+      if (native || !settings.repair || f.dataset.pfLabeled) return;
       const hint = f.dataset.pfPh || f.getAttribute('placeholder') || (f.tagName === 'SELECT' && f.options[0] ? origText(f.options[0]) : '');
       let name = K.fieldLabels[hint];
       if (f.type === 'radio' || f.type === 'checkbox') {
@@ -840,7 +859,7 @@
         l.textContent = name;
         f.before(l);
       }
-    }
+    });
     for (const c of $$('[data-pf-click]', portal)) {
       stats.buttons++;
       if (c.getBoundingClientRect().height < 24) stats.tiny++;
@@ -911,7 +930,6 @@
   }
   function setLevel(n, announce) {
     settings.level = n;
-    settings.preset = 'custom';
     saveSettings();
     tick();
     if (announce) say(['Showing the original words.', 'Plain words on. Jargon is swapped for everyday words. Hover any underlined text to see the original.', 'Simplest words on. Long sentences are now short and clear.'][n], { ms: 5000 });
@@ -1030,9 +1048,17 @@
     el.badge.textContent = open.length;
     el.badge.setAttribute('aria-label', `${open.length} warnings`);
     const ahead = aheadList();
-    const sig = JSON.stringify([state.hazards.map(h => [h.id, h.text, h.fixed]), ahead]);
-    if (sig !== renderHazards.sig) {
-      renderHazards.sig = sig;
+    // Rebuild the pane only when its shape changes. The time-limit sentence changes every second, so
+    // that only updates the text in place (rebuilding would also throw away keyboard focus each second).
+    const shape = JSON.stringify([state.hazards.map(h => [h.id, h.icon, h.title, h.fixed, h.actions.map(a => a.label)]), ahead]);
+    const texts = state.hazards.map(h => h.text);
+    if (shape === renderHazards.shape) {
+      const boxes = $$('.pf-hazard', el.hazards);
+      texts.forEach((t, i) => { if (t !== renderHazards.texts[i] && boxes[i]) $('p', boxes[i]).textContent = t; });
+      renderHazards.texts = texts;
+    } else {
+      renderHazards.shape = shape;
+      renderHazards.texts = texts;
       el.hazards.innerHTML = (state.hazards.length ? `<h3 class="pf-h3">On this page</h3>` + state.hazards.map(h => `
         <div class="pf-hazard ${h.fixed ? 'pf-fixed' : ''}">
           <h4><span aria-hidden="true">${h.icon}</span> ${esc(h.title)} ${h.fixed ? '<span class="pf-ok">handled</span>' : ''}</h4>
@@ -1279,13 +1305,30 @@
     if (c) { const k = ($('.pf-paste', ui).__kit || []).find(x => x.id === c.dataset.copykit); if (k) copy(k.text); }
   });
 
+  // ---------- nudge to make an account (only when signed out, at most twice a session) ----------
+  function promptAccount(when) {
+    if (account) return;
+    const key = 'pf-account-nudge';
+    let seen = [];
+    try { seen = JSON.parse(sessionStorage.getItem(key) || '[]'); } catch (e) { /* none */ }
+    if (seen.includes(when) || seen.includes('never')) return;
+    seen.push(when);
+    try { sessionStorage.setItem(key, JSON.stringify(seen)); } catch (e) { /* private mode */ }
+    const text = when === 'done'
+      ? 'Nice work! Want me to remember what helps you next time? A free account keeps your choices and writes your needs out, ready to paste into any form.'
+      : 'Want me to remember these choices? Make a free account and they’ll be ready every time. You’ll also get your needs written out, ready to paste into any form. I’ll keep your place here.';
+    notice('account', text, 'info', [
+      { label: 'Make my free account', fn: () => { location.href = '../account/signup.html?return=portal'; } },
+      { label: 'I already have one', fn: () => { location.href = '../account/login.html?return=portal'; } },
+      { label: 'Not now', fn: () => { try { sessionStorage.setItem(key, JSON.stringify(['never'])); } catch (e) { /* private mode */ } } }
+    ]);
+  }
+
   // ---------- session-start picker ----------
   const ob = $('.pf-onboard', ui);
   let obPicked = new Set();
   function openOnboarding() {
-    const start = account && account.needs ? account.needs
-      : settings.needs && settings.needs.length ? settings.needs
-      : PRESETS[settings.preset] ? PRESETS[settings.preset].needs : [];
+    const start = account && account.needs ? account.needs : settings.needs || [];
     obPicked = new Set(start);
     renderObTiles();
     $('.pf-ob-who', ob).textContent = account ? `Welcome back, ${account.name || account.email}! I picked the choices saved in your account.` : '';
@@ -1295,6 +1338,9 @@
     el.panel.inert = true;
     document.documentElement.classList.add('pf-ob-open');
     setTimeout(() => $('.pf-tile', ob).focus(), 50);
+    if (SR && navigator.permissions && navigator.permissions.query) {
+      navigator.permissions.query({ name: 'microphone' }).then(p => { if (p.state === 'granted' && !ob.hidden) listenInPicker(false); }).catch(() => {});
+    }
   }
   function renderObTiles() {
     $$('[data-need]', ob).forEach(b => b.setAttribute('aria-pressed', String(obPicked.has(b.dataset.need))));
@@ -1302,20 +1348,22 @@
   }
   function closeOnboarding(apply) {
     try { sessionStorage.setItem('pf-onboarded', '1'); } catch (e) { /* private mode */ }
+    // Stop the microphone again unless they asked for voice control.
+    if (obListening && !obPicked.has('voice')) stopListening();
+    obListening = false;
     ob.hidden = true;
     portal.inert = false;
     el.panel.inert = false;
     document.documentElement.classList.remove('pf-ob-open');
     if (apply) {
       const ids = [...obPicked];
-      const match = Object.keys(PRESETS).find(k => PRESETS[k].needs.length === ids.length && PRESETS[k].needs.every(n => ids.includes(n)));
-      applyNeeds(ids, match);
-      if (match) { Object.assign(settings, PRESETS[match].extra); saveSettings(); }
+      applyNeeds(ids);
       clearNotice('start-voice');
       const names = N.features.filter(f => ids.includes(f.id)).map(f => f.label.toLowerCase());
       say(names.length ? `Got it: ${names.join(', ')}. Now tell me what you want to do.` : 'Okay! Tell me what you want to do.', { ms: 6000, forceSpeak: ids.includes('voice') || ids.includes('readAloud') });
     }
     renderPasteKit();
+    promptAccount('start');
     el.cmd.focus();
   }
   $$('[data-need]', ob).forEach(b => b.addEventListener('click', () => {
@@ -1327,6 +1375,15 @@
     const f = N.features.find(x => x.id === id);
     live(`${f.label}: ${obPicked.has(id) ? 'picked' : 'not picked'}`);
   }));
+  // Answering the picker by voice. If the microphone was allowed before, listen straight away.
+  let obListening = false;
+  function listenInPicker(announce) {
+    if (!SR) { say('Voice isn’t available in this browser. Chrome, Edge and Safari support it.', { ms: 5000 }); return; }
+    if (!listening) { startListening(); obListening = !settings.listen; }
+    $('.pf-ob-listen', ob).setAttribute('aria-pressed', 'true');
+    if (announce) say('I’m listening. Say what helps you, like “bigger text” or “I talk instead of typing”. Then say “start”.', { ms: 8000, forceSpeak: true });
+  }
+  $('.pf-ob-listen', ob).addEventListener('click', () => listenInPicker(true));
   $('.pf-ob-start', ob).addEventListener('click', () => closeOnboarding(true));
   $('.pf-ob-skip', ob).addEventListener('click', () => { applyModes(); closeOnboarding(false); });
   $('.pf-ob-read', ob).addEventListener('click', () => {
@@ -1363,72 +1420,403 @@
   }
 
   // ---------- commands (typed or spoken) ----------
-  function handleCommand(raw, via) {
-    const t = raw.trim();
-    const l = t.toLowerCase().replace(/[.!?]+$/, '');
-    if (!t) return;
-    if (via === 'voice') el.heard.textContent = `You said: “${t}”`;
-    let m;
-    if (/^(next|what now|what('s| is) next|repeat|say (that|it) again|where am i|help)\b/.test(l)) return announceStep(true);
-    if (/^(show me|where is it|point)/.test(l)) return showMe();
-    if (/^(press|click|tap|do|hit) (it|that|this|the button)\b|^go ahead/.test(l)) return pressIt();
-    if ((m = t.match(/^(?:type|write|enter|fill in)\s+(.+)$/i))) return typeIt(m[1].replace(/[.]$/, ''));
-    if ((m = l.match(/^(?:choose|pick|select)\s+(.+)$/))) return chooseIt(m[1]);
-    if (/^(tick|check|uncheck|untick)\b/.test(l)) return tickIt();
-    if (/^(read|read (this|the) page|read it)\b/.test(l)) return readPage();
-    if (/^(simpl|plain|easier|explain)/.test(l)) return setLevel(Math.min(2, +settings.level + 1), true);
-    if (/^summar/.test(l)) return summarize();
-    if (/^(stop guiding|cancel|never mind)/.test(l)) return endPlan();
-    if (/^(stop|quiet|shh|be quiet|hush)\b/.test(l)) { if ('speechSynthesis' in window) speechSynthesis.cancel(); return; }
-    if (/(take a break|rest stop|\brest\b|pause|i'?m tired)/.test(l)) return restStop();
-    if (/^(resume|pick up|i'?m back|keep going)/.test(l)) return resume();
-    if (/^(bigger|larger|zoom)/.test(l)) return setSetting('large', true, 'Bigger text and buttons on.');
-    if (/^paste( my)? (needs|accessibility)/.test(l)) return pasteInto('short');
-    if (/^(fill|fetch)/.test(l)) return previewFill();
-    const g = parseGoal(t);
-    if (g) return startPlan(g);
-    say('Sorry, I didn’t understand that. Try a goal like “book a follow-up with my cardiologist”, or say “next”, “press it”, “type …”, or “read this”.', { ms: 7000, forceSpeak: via === 'voice' });
+  // Everything the user says or types goes through here. voice.js works out what they meant;
+  // this carries it out on the page.
+  const V = window.PF_VOICE;
+  const voice = { pending: null, dictating: false, field: null, numbers: null, ttsEnd: 0, speakingText: '' };
+  const textLike = f => f && f.matches && f.matches('textarea, input:not([type=radio]):not([type=checkbox]):not([type=button]):not([type=submit])');
+  function fieldLabel(f) {
+    return f.getAttribute('aria-label') || K.fieldLabels[f.dataset.pfPh || f.getAttribute('placeholder') || ''] || fieldHint(f);
+  }
+  // Every thing on screen that can be pressed or typed into, with the names someone might say.
+  function pageLabels() {
+    const out = [];
+    const add = (node, names) => { names = [...new Set(names.map(norm).filter(Boolean))]; if (names.length) out.push({ node, names }); };
+    // Match the portal's own wording and the everyday words for it ("Encounter Mgmt" → "appointments").
+    for (const c of F.clickables()) add(c, [origText(c), c.textContent, c.getAttribute('aria-label') || '', rewrite(origText(c), 1), rewrite(origText(c), 2)]);
+    for (const f of F.fields()) if (visible(f)) add(f, [fieldLabel(f), f.type === 'radio' || f.type === 'checkbox' ? rewrite(sibText(f), 1) : '']);
+    if (!settings.collapsed) {
+      for (const b of $$('button, a[href], [role=tab]', el.panel)) {
+        if (!visible(b)) continue;
+        const c = b.cloneNode(true);
+        c.querySelectorAll('[aria-hidden=true], .pf-badge').forEach(x => x.remove());
+        add(b, [b.getAttribute('aria-label') || '', c.textContent]);
+      }
+    }
+    return out;
+  }
+  function voiceCtx() {
+    return {
+      pending: !!voice.pending, dictating: voice.dictating, numbersShown: !!voice.numbers, dialogOpen: !ob.hidden,
+      tiles: N.features.map(f => ({ id: f.id, names: [f.label, f.desc] })),
+      labels: ob.hidden ? pageLabels().flatMap(x => x.names) : [],
+      fieldNames: F.fields().filter(visible).map(fieldLabel)
+    };
+  }
+  function currentTextField() {
+    // While dictating, stay in the same box. Otherwise follow the current step.
+    if (voice.dictating && voice.field && voice.field.isConnected) return voice.field;
+    if (textLike(state.target)) return state.target;
+    if (voice.field && voice.field.isConnected) return voice.field;
+    const a = document.activeElement;
+    if (textLike(a) && portal.contains(a)) return a;
+    return state.lastFocusHint ? F.fields().find(x => fieldHint(x) === state.lastFocusHint && textLike(x)) || null : null;
+  }
+  function findField(name) {
+    const hit = V.bestMatch(name, F.fields().filter(visible).map(f => ({ f, names: [fieldLabel(f), fieldHint(f)] })));
+    return hit && hit.score >= 0.55 ? hit.item.f : null;
+  }
+  const PROFILE_KEYS = [
+    [/member|insurance/, 'memberId'], [/phone|number/, 'phone'], [/e-?mail/, 'email'], [/user ?name|^id$/, 'username'],
+    [/birth|dob/, 'dob'], [/need|accessib/, 'needs'], [/name/, 'name']
+  ];
+  function profileValue(what) {
+    const key = (PROFILE_KEYS.find(([re]) => re.test(what)) || [])[1];
+    if (key === 'needs') { const kit = ($('.pf-paste', ui).__kit || [])[0]; return kit ? kit.text : ''; }
+    return key ? profile[key] || '' : '';
+  }
+  function askConfirm(question, yes, no) {
+    voice.pending = { yes, no, until: Date.now() + 20000 };
+    notice('confirm', question, 'info', [
+      { label: 'Yes', fn: () => { voice.pending = null; yes(); } },
+      { label: 'No', fn: () => { voice.pending = null; if (no) no(); } }
+    ]);
+    say(`${question} Say yes or no.`, { forceSpeak: settings.listen });
+  }
+  function activate(node, name) {
+    if (node.matches('input, select, textarea')) {
+      node.focus();
+      if (node.type === 'checkbox' || node.type === 'radio') { node.click(); return; }
+      voice.field = textLike(node) ? node : null;
+      if (node.tagName === 'SELECT') {
+        say(`In “${fieldLabel(node)}”. The choices are: ${[...node.options].filter(o => o.value).map(o => norm(o.textContent)).join(', ')}. Say “choose” and one of them.`, { forceSpeak: settings.listen });
+      } else {
+        say(`I’m in the “${fieldLabel(node)}” box. Say “type” and the words, or “start dictation”.`, { forceSpeak: settings.listen });
+      }
+      return;
+    }
+    bubble(`Pressed “${name}”.`, 2500);
+    live(`Pressed ${name}.`);
+    node.click();
+  }
+  function showHelp(stuck) {
+    const s = plan && state.cur && !state.resting ? state.cur.step : null;
+    const tip = !s ? 'Tell me what you want to do, like “book a follow-up with my cardiologist”, “refill my medicine” or “understand my test results”.'
+      : s.final ? 'You’re done with this task. Say “read this” to hear the page, or tell me something new to do.'
+      : { press: 'Say “do it” and I’ll press it for you, or “show me” to see where it is.',
+          slot: 'Say “choose” and a time, like “choose nine forty”, or “choose the first one”.',
+          text: 'Say “type” and then the words, like “type follow-up visit”. Or say “start dictation” and just talk.',
+          select: 'Say “choose” and the option. Say “what are the options” to hear them.',
+          consent: 'Say “read this” to hear it. If you agree, say “tick it”. It’s your choice.' }[s.kind] || 'Say “do it” or “show me”.';
+    const text = (s && !s.final ? `Right now: ${stepText(s)} ` : '') + tip +
+      ' You can also say “show numbers” to put a number on everything you can press, then say the number. Say “stop” to stop me talking.';
+    say(text, { ms: 12000, forceSpeak: settings.listen || stuck });
+    switchTab('lead');
+    const h = $('.pf-saycard', ui);
+    if (h) h.open = true;
+  }
+  function explain(term) {
+    const hit = V.bestMatch(term.replace(/^(?:an?|the)\s+/, ''), GLOSS.map(g => ({ g, names: [g.term] })));
+    if (hit && hit.score >= 0.7) say(`“${hit.item.g.term}” means: ${hit.item.g.plain}.`, { ms: 8000, forceSpeak: settings.listen });
+    else say(`I don’t know “${term}” yet. Say “simpler” and I’ll rewrite this page in easier words.`, { ms: 6000, forceSpeak: settings.listen });
+  }
+  function answer(about) {
+    const tell = t => say(t, { ms: 10000, forceSpeak: settings.listen });
+    if (about === 'appointment') {
+      const a = store.get('appt', null);
+      const row = $$('tr', portal).find(tr => /\d{2}\/\d{2}\/\d{4}|\w{3} \d{1,2}\/\d{1,2}/.test(origText(tr)) && !/DOS/.test(origText(tr)));
+      if (a && a.when) return tell(`You asked for ${a.when}${a.prov ? ' with ' + a.prov : ''}. The clinic still has to approve it.`);
+      if (row) return tell(`Your next appointment: ${$$('td', row).map(origText).join(', ')}.`);
+      return tell('I don’t know yet. Say “open appointments” and I’ll read them to you.');
+    }
+    if (about === 'doctor') return tell(profile.doctors ? `Your profile lists: ${profile.doctors.replace(/\n/g, '. ')}.` : 'I don’t know your doctors yet. You can add them in the Fetch tab.');
+    if (about === 'meds') return tell(profile.meds ? `Your profile lists: ${profile.meds.replace(/\n/g, '. ')}.` : 'I don’t know your medicines yet. You can add them in the Fetch tab.');
+    if (about === 'time') {
+      const sl = sessionLeft();
+      return tell(sl == null ? 'This page doesn’t show a time limit.' : `This website will sign you out in about ${Math.floor(sl / 60)} minutes ${sl % 60} seconds.${settings.keepAlive ? ' I’m keeping you signed in.' : ' Say “keep me signed in” and I’ll stop that.'}`);
+    }
+    if (about === 'phone') return askConfirm('If phone calls are hard, I can write a message to the clinic instead. Want me to write it?', () => draft('phone'));
+    if (about === 'accommodation') {
+      if (/interpreter|sign language|\basl\b/i.test(voice.lastSaid || '')) { profile.acc = [...new Set([...(profile.acc || []), 'asl'])]; store.set('profile', profile); renderAccTiles(); renderPasteKit(); }
+      setSetting('collapsed', false);
+      switchTab('speak');
+      return tell('Pick what helps you at the visit in Speak up, then say “write my request” and I’ll write it for you.');
+    }
+    if (about === 'privacy') return tell('Everything I know about you stays on this device, in this browser. I don’t send it anywhere, and I never save passwords.');
+    return tell('I’m Pawthfinder, your guide dog for medical websites. I lead you step by step, warn you about problems ahead, explain hard words, fill in forms with you and help you ask for what you need. Say “help” any time.');
+  }
+
+  // Number labels on everything you can press or type into ("show numbers", then "click 5").
+  const numLayer = document.createElement('div');
+  numLayer.className = 'pf-nums';
+  numLayer.setAttribute('aria-hidden', 'true');
+  ui.appendChild(numLayer);
+  function showNumbers(quiet) {
+    const items = pageLabels().map(x => x.node).filter(n => {
+      const r = n.getBoundingClientRect();
+      return r.bottom > 0 && r.top < innerHeight && r.right > 0 && r.left < innerWidth;
+    });
+    voice.numbers = {};
+    numLayer.innerHTML = items.map((n, i) => {
+      voice.numbers[i + 1] = n;
+      const r = n.getBoundingClientRect();
+      return `<span class="pf-num" style="left:${Math.max(0, r.left - 6)}px;top:${Math.max(0, r.top - 10)}px">${i + 1}</span>`;
+    }).join('');
+    if (!quiet) say(`I put a number on ${items.length} things you can use. Say a number to press it, or “hide numbers”.`, { ms: 5000, forceSpeak: settings.listen });
+  }
+  function hideNumbers() { voice.numbers = null; numLayer.innerHTML = ''; }
+  // Opening a section or switching tabs moves things in the panel; redraw the labels.
+  const renumber = () => { if (voice.numbers) setTimeout(() => showNumbers(true), 60); };
+  ui.addEventListener('click', renumber);
+  ui.addEventListener('toggle', renumber, true);
+  window.addEventListener('resize', renumber);
+
+  const DISPATCH = {
+    empty: () => {},
+    yes: () => { const p = voice.pending; voice.pending = null; clearNotice('confirm'); if (p) p.yes(); },
+    no: () => { const p = voice.pending; voice.pending = null; clearNotice('confirm'); if (p && p.no) p.no(); say('Okay.', { ms: 2000 }); },
+    'listen-off': () => { setSetting('listen', false); say('I stopped listening. Press the microphone button, or click “Talk to Pawthfinder”, to talk to me again.', { ms: 7000, forceSpeak: true }); },
+    hush: () => { if ('speechSynthesis' in window) speechSynthesis.cancel(); },
+    'dialog-start': () => closeOnboarding(true),
+    'dialog-skip': () => { applyModes(); closeOnboarding(false); },
+    'dialog-read': () => $('.pf-ob-read', ob).click(),
+    'dialog-tile': i => {
+      const b = $(`[data-need="${i.id}"]`, ob);
+      if (b && obPicked.has(i.id) !== i.on) b.click();
+      const f = N.features.find(x => x.id === i.id);
+      say(`${f.label}: ${i.on ? 'picked' : 'not picked'}. Say “start” when you’re done.`, { ms: 4000, forceSpeak: settings.listen });
+    },
+    help: i => showHelp(i.stuck),
+    where: () => { summarize(); if (plan && state.cur) setTimeout(() => announceStep(true), 200); },
+    step: () => announceStep(true),
+    show: () => showMe(),
+    'do-step': () => {
+      const s = state.cur && state.cur.step;
+      if (s && s.kind === 'select' && s.choose) return chooseIt(s.choose);
+      pressIt();
+    },
+    'numbers-on': () => showNumbers(),
+    'numbers-off': () => { hideNumbers(); say('Numbers hidden.', { ms: 2000 }); },
+    number: i => {
+      if (!voice.numbers) showNumbers(true);
+      const n = voice.numbers[i.n];
+      if (!n) return say(`There’s no number ${i.n}. Say “show numbers” to see them again.`, { forceSpeak: settings.listen });
+      hideNumbers();
+      if (i.value != null && textLike(n)) { setValue(n, i.value); n.focus(); return say(`Typed “${i.value}”.`, { ms: 3000 }); }
+      const entry = pageLabels().find(x => x.node === n);
+      activate(n, entry ? entry.names[0] : `number ${i.n}`);
+    },
+    'dictate-start': () => {
+      const f = currentTextField();
+      if (!f) return say('Which box should I type in? Say “click” and the box name, like “click reason for visit”, or say “show numbers”.', { forceSpeak: settings.listen });
+      voice.dictating = true;
+      voice.field = f;
+      f.focus();
+      updateMic();
+      say(`Dictation on. I’ll type everything you say into “${fieldLabel(f)}”. Say “stop dictation” when you’re done.`, { ms: 6000, forceSpeak: settings.listen });
+    },
+    'dictate-text': i => {
+      const f = currentTextField();
+      if (!f) { voice.dictating = false; updateMic(); return; }
+      let add = i.value.trim() || i.value;
+      if (!f.value) add = add.charAt(0).toUpperCase() + add.slice(1);
+      setValue(f, f.value + (f.value && add !== '\n' && !/\s$/.test(f.value) ? ' ' : '') + add);
+      live(`Typed: ${add}`);
+    },
+    'dictate-stop': () => {
+      const f = currentTextField();
+      voice.dictating = false;
+      updateMic();
+      say(f ? `Dictation off. The box says: “${f.type === 'password' ? 'hidden' : f.value}”.` : 'Dictation off.', { ms: 6000, forceSpeak: settings.listen });
+    },
+    clear: () => { const f = currentTextField(); if (f) { setValue(f, ''); say('Cleared.', { ms: 2000 }); } else say('There’s no box to clear.'); },
+    'delete-word': () => { const f = currentTextField(); if (f) { setValue(f, f.value.replace(/\s*\S+\s*$/, '')); say('Deleted the last word.', { ms: 2000 }); } },
+    type: i => {
+      const f = i.n != null && voice.numbers ? voice.numbers[i.n] : i.field ? findField(i.field) : currentTextField();
+      if (!textLike(f)) {
+        return say(i.field ? `I couldn’t find a “${i.field}” box here.` : 'Which box? Say “click” and the box name, or “show numbers”.', { forceSpeak: settings.listen });
+      }
+      const value = i.fromProfile ? profileValue(i.fromProfile) : i.value;
+      if (!value) return say(`I don’t know your ${i.fromProfile} yet. Add it in the Fetch tab, or say “type” and then the words.`, { forceSpeak: settings.listen });
+      setValue(f, value);
+      voice.field = f;
+      f.focus();
+      say(`Typed “${f.type === 'password' ? '•'.repeat(value.length) : value}” in “${fieldLabel(f)}”.${i.spelled ? '' : ' Say “spell” and the letters if it’s not right.'}`, { ms: 5000 });
+    },
+    choose: i => chooseIt(i.value, i.time),
+    tick: i => tickIt(i.on),
+    options: () => {
+      const t = state.target && state.target.tagName === 'SELECT' ? state.target : F.fields().find(f => f.tagName === 'SELECT' && !f.disabled && !f.value);
+      const times = $$('[data-pf-click]', portal).filter(x => /^\d{2}:\d{2}$/.test(origText(x)));
+      const radios = F.fields().filter(x => x.type === 'radio');
+      const list = t ? [...t.options].filter(o => o.value).map(o => norm(o.textContent)) : times.length ? times.map(origText) : radios.map(r => rewrite(sibText(r), 1));
+      say(list.length ? `The choices are: ${list.join(', ')}.` : 'There’s nothing to choose here.', { ms: 9000, forceSpeak: settings.listen });
+    },
+    scroll: i => {
+      const behavior = settings.rm ? 'auto' : 'smooth';
+      if (i.dir === 'top') window.scrollTo({ top: 0, behavior });
+      else if (i.dir === 'bottom') window.scrollTo({ top: document.documentElement.scrollHeight, behavior });
+      else window.scrollBy({ top: (i.dir === 'down' ? 0.7 : -0.7) * innerHeight, behavior });
+      if (voice.numbers) setTimeout(() => showNumbers(true), 400);
+    },
+    back: () => history.back(),
+    home: () => { const h = F.click(NAV_TO.home); if (h) h.click(); else say('I can’t find the home page link here.'); },
+    panel: i => setSetting('collapsed', !i.show),
+    tab: i => { setSetting('collapsed', false); switchTab(i.tab); say(`Opened ${$(`#pf-tab-${i.tab}`, ui).textContent.replace(/\d+$/, '').trim()}.`, { ms: 2500 }); },
+    read: () => readPage(),
+    'read-letter': () => speak(el.letter.value || 'There’s no letter yet. Say “write my request” first.', true, true),
+    summary: () => summarize(),
+    explain: i => explain(i.term),
+    setting: i => {
+      if (i.key === 'level') return setLevel(i.value === 'up' ? Math.min(2, +settings.level + 1) : 0, true);
+      if (i.key === 'rate') {
+        const r = Math.max(0.6, Math.min(1.6, Math.round((settings.rate + (i.value === 'up' ? 0.2 : -0.2)) * 10) / 10));
+        setSetting('rate', r);
+        return say(i.value === 'up' ? 'Okay, I’ll talk faster.' : 'Okay, I’ll talk slower.', { ms: 3000, forceSpeak: true });
+      }
+      const names = { large: 'Bigger text and buttons', hc: 'Strong contrast', speak: 'Reading aloud', rm: 'Less movement', oneStep: 'One step at a time', keepAlive: 'Keeping you signed in', dys: 'Easier-to-read letters', sounds: 'Sound cues' };
+      setSetting(i.key, i.value);
+      say(`${names[i.key]}: ${i.value ? 'on' : 'off'}.`, { ms: 3000, forceSpeak: i.key === 'speak' || settings.listen });
+    },
+    fill: () => {
+      previewFill();
+      const n = (el.fill.__items || []).length;
+      if (n) askConfirm(`I can fill ${n} boxes from your profile. Should I fill them?`, () => DO['fill-go'](), () => DO['fill-cancel']());
+    },
+    paste: () => { const f = currentTextField(); if (f) f.focus(); pasteInto('short'); },
+    letter: () => draft('acc'),
+    card: () => accessibilityCard(),
+    copy: () => copy(el.letter.value),
+    rest: () => restStop(),
+    resume: () => resume(),
+    cancel: () => (plan ? endPlan() : say('Okay.', { ms: 2000 })),
+    ask: i => answer(i.about),
+    click: (i, raw) => {
+      const hit = V.bestMatch(i.name, pageLabels());
+      if (hit && hit.score >= 0.72) return activate(hit.item.node, hit.name);
+      const g = parseGoal(raw);
+      if (g && (!hit || hit.score < 0.6)) return startPlan(g);
+      if (hit && hit.score >= 0.5) return askConfirm(`Did you mean “${hit.name}”?`, () => activate(hit.item.node, hit.name));
+      say(`I can’t find “${i.name}” on this page. Say “show numbers” to see everything you can press.`, { ms: 6000, forceSpeak: settings.listen });
+    },
+    unknown: (i, raw, via) => {
+      const g = parseGoal(raw);
+      if (g) return startPlan(g);
+      const hit = V.bestMatch(i.text, pageLabels());
+      if (hit && hit.score >= 0.85) return activate(hit.item.node, hit.name);
+      if (hit && hit.score >= 0.6) return askConfirm(`Did you mean “${hit.name}”?`, () => activate(hit.item.node, hit.name));
+      const ideas = V.suggest(i.text).map(x => `“${x}”`).join(', ');
+      say(`Sorry, I didn’t catch that. You could say ${ideas}. Say “help” for more.`, { ms: 8000, forceSpeak: via === 'voice' });
+    }
+  };
+  function handleCommand(raw, via, intent) {
+    raw = String(raw || '').trim();
+    if (!raw) return;
+    if (voice.pending && Date.now() > voice.pending.until) { voice.pending = null; clearNotice('confirm'); }
+    intent = intent || V.parse(raw, voiceCtx());
+    voice.lastSaid = raw;
+    if (via === 'voice' && intent.type !== 'dictate-text') el.heard.textContent = `You said: “${raw}”`;
+    if (voice.pending && intent.type !== 'yes' && intent.type !== 'no') { voice.pending = null; clearNotice('confirm'); }
+    (DISPATCH[intent.type] || DISPATCH.unknown)(intent, raw, via);
   }
 
   // ---------- voice input ----------
   const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
-  let rec = null, listening = false;
+  let rec = null, listening = false, restartDelay = 250;
+  const speakingNow = () => ('speechSynthesis' in window && speechSynthesis.speaking) || Date.now() - voice.ttsEnd < 450;
+  function heard(text, kind) {
+    el.heard.textContent = text;
+    el.heard.dataset.state = kind || '';
+  }
   function startListening() {
     if (!SR) {
-      notice('novoice', 'Voice commands aren’t available in this browser (try Chrome or Edge). You can type the same commands in the box above.', 'warn');
+      notice('novoice', 'Voice commands aren’t available in this browser. Chrome, Edge and Safari support them. You can type the same commands in the box above.', 'warn');
       setSetting('listen', false);
       return;
     }
     if (listening) return;
     rec = new SR();
-    rec.lang = 'en-US';
+    rec.lang = /^en/i.test(navigator.language || '') ? navigator.language : 'en-US';
     rec.continuous = true;
-    rec.interimResults = false;
+    rec.interimResults = true; // show words as they're heard
+    rec.maxAlternatives = 5;   // and choose the version that makes sense on this page
+    try {
+      // Chrome's contextual biasing, where available: favor words that are on screen.
+      if ('phrases' in rec && window.SpeechRecognitionPhrase) {
+        rec.phrases = [...new Set(pageLabels().flatMap(x => x.names).concat(Object.values(V.EXAMPLES).flat()))].slice(0, 300).map(p => new window.SpeechRecognitionPhrase(p, 3));
+      }
+    } catch (err) { /* not supported */ }
+    rec.onstart = () => { restartDelay = 250; heard(voice.dictating ? `✍️ Dictating into “${fieldLabel(currentTextField() || document.body)}”. Say “stop dictation” when you’re done.` : '🎤 Listening. Say “help” any time.', 'listening'); };
     rec.onresult = e => {
-      const r = e.results[e.results.length - 1];
-      if (r.isFinal && !(window.speechSynthesis && speechSynthesis.speaking)) handleCommand(r[0].transcript, 'voice');
+      for (let i = e.resultIndex; i < e.results.length; i++) {
+        const r = e.results[i];
+        if (!r.isFinal) { if (!speakingNow()) heard(`👂 “${r[0].transcript.trim()}…”`, 'hearing'); continue; }
+        onHeard(Array.from(r).map(x => ({ transcript: x.transcript, confidence: x.confidence })));
+      }
     };
-    rec.onend = () => { if (listening) { try { rec.start(); } catch (err) { /* already started */ } } };
+    rec.onend = () => {
+      if (!listening) return;
+      // Recognition stops on silence; start again, backing off if it keeps failing.
+      setTimeout(() => { if (listening) try { rec.start(); } catch (err) { /* already started */ } }, restartDelay);
+      restartDelay = Math.min(restartDelay * 2, 4000);
+    };
     rec.onerror = e => {
+      const tell = (msg, actions) => notice('novoice', msg, 'warn', actions || []);
       if (e.error === 'not-allowed' || e.error === 'service-not-allowed') {
         listening = false;
         settings.listen = false;
         saveSettings();
-        notice('novoice', 'I can’t use the microphone. Allow microphone access for this page, or type commands in the box.', 'warn');
+        updateMic();
+        tell('I can’t use the microphone. Allow microphone access for this page (the icon at the left of the address bar), then press “Try again”.', [{ label: 'Try again', fn: () => setSetting('listen', true) }]);
+      } else if (e.error === 'audio-capture') {
+        tell('I can’t find a microphone. Check that one is plugged in and not muted, then press “Try again”.', [{ label: 'Try again', fn: () => { stopListening(); setSetting('listen', true); } }]);
+      } else if (e.error === 'network') {
+        tell('Voice commands in this browser need an internet connection. I’ll keep trying. You can type commands in the box meanwhile.');
+      } else if (e.error === 'language-not-supported') {
+        rec.lang = 'en-US';
       }
+      // 'no-speech' and 'aborted' are normal; onend restarts.
     };
     listening = true;
     try { rec.start(); } catch (err) { /* already started */ }
+    clearNotice('start-voice');
     updateMic();
+  }
+  function onHeard(alts) {
+    const best = V.pickAlternative(alts.filter(a => a.transcript.trim()), voiceCtx());
+    if (!best) return;
+    // While I'm talking, the microphone can hear me through the speakers. Ignore anything that
+    // sounds like what I'm saying; anything else is the user talking over me, so stop and listen.
+    if (speakingNow()) {
+      const heardText = best.transcript.toLowerCase().trim();
+      const mine = (voice.speakingText || '').toLowerCase();
+      const echo = mine && (mine.includes(heardText) || V.similarity(heardText, mine) >= 0.55);
+      if (echo && best.intent.type !== 'hush' && best.intent.type !== 'listen-off') return;
+      if ('speechSynthesis' in window) speechSynthesis.cancel();
+      voice.speakingText = '';
+      if (best.intent.type === 'hush') return;
+    }
+    // Not sure what was heard, and it would do something? Check first.
+    const acts = ['click', 'number', 'do-step', 'tick', 'type', 'fill', 'cancel', 'unknown', 'dialog-start', 'dialog-skip', 'back'];
+    if (!voice.dictating && !voice.pending && best.confidence > 0 && best.confidence < 0.5 && acts.includes(best.intent.type)) {
+      heard(`🤔 I think you said “${best.transcript.trim()}”`, 'unsure');
+      askConfirm(`Did you say “${best.transcript.trim()}”?`, () => handleCommand(best.transcript, 'voice', best.intent));
+      return;
+    }
+    handleCommand(best.transcript, 'voice', best.intent);
+    if (listening && !voice.dictating) setTimeout(() => { if (el.heard.dataset.state !== 'hearing') heard(`${el.heard.textContent}  ·  🎤 listening`, 'listening'); }, 1500);
   }
   function stopListening() {
     listening = false;
-    if (rec) try { rec.stop(); } catch (err) { /* not started */ }
+    voice.dictating = false;
+    if (rec) try { rec.abort(); } catch (err) { /* not started */ }
+    heard('');
     updateMic();
   }
   function updateMic() {
     el.mic.setAttribute('aria-pressed', String(listening));
     el.mic.classList.toggle('pf-on', listening);
+    el.mic.classList.toggle('pf-dictating', listening && voice.dictating);
     el.mic.setAttribute('aria-label', listening ? 'Stop listening' : 'Talk to Pawthfinder');
   }
 
@@ -1436,32 +1824,20 @@
   function saveSettings() { store.set('settings', settings); applyModes(); renderSettings(); }
   function setSetting(k, v, msg) {
     settings[k] = v;
-    if (k !== 'collapsed' && k !== 'keepAlive') settings.preset = 'custom';
     saveSettings();
     if (k === 'repair' && !v) unrepair();
     if (k === 'listen') v ? startListening() : stopListening();
     if (msg) say(msg, { ms: 4000 });
     tick();
   }
-  function applyNeeds(ids, preset) {
+  function applyNeeds(ids) {
     const wasListening = settings.listen;
-    Object.assign(settings, N.settingsFor(ids, settings), { preset: preset || 'custom' });
+    Object.assign(settings, N.settingsFor(ids, settings));
     if (!settings.repair) unrepair();
     saveSettings();
     if (settings.listen && !wasListening) startListening();
     if (!settings.listen && wasListening) stopListening();
     tick();
-  }
-  function applyPreset(name) {
-    const p = PRESETS[name];
-    Object.assign(settings, presetSettings(name, settings));
-    saveSettings();
-    tick();
-    if (settings.listen) startListening(); else stopListening();
-    const intro = name === 'voice'
-      ? 'Voice mode on. Tell me what you want to do — for example, “book a follow-up with my cardiologist”. Say “next” any time to hear the current step.'
-      : `${p.label} mode on. ${p.desc}`;
-    say(intro, { ms: 7000, forceSpeak: name === 'voice' });
   }
   function applyModes() {
     const h = document.documentElement.classList;
@@ -1485,9 +1861,9 @@
     if (line) line.innerHTML = account
       ? `Signed in as <strong>${esc(account.name || account.email)}</strong> · <a href="../account/profile.html">My account</a>`
       : `<a href="../account/login.html?return=portal">Sign in</a> or <a href="../account/signup.html?return=portal">make a free account</a> to save your choices.`;
-    $$('.pf-preset', ui).forEach(b => b.setAttribute('aria-pressed', String(b.dataset.preset === settings.preset)));
-    const p = PRESETS[settings.preset];
-    $('.pf-preset-desc', ui).textContent = p ? `${p.label} mode: ${p.desc} Change anything below.` : 'Custom mode. Mix and match anything below — or pick a mode at the top.';
+    $('.pf-needs-desc', ui).textContent = account
+      ? 'These come from your account. Change anything here for this visit.'
+      : 'Pick what helps you. Make an account to have these ready every time.';
   }
 
   // ---------- tabs ----------
@@ -1521,7 +1897,6 @@
   });
   $$('.pf-chip', ui).forEach(c => c.addEventListener('click', () => handleCommand(c.textContent, 'text')));
   el.mic.addEventListener('click', () => setSetting('listen', !listening));
-  $$('.pf-preset', ui).forEach(b => b.addEventListener('click', () => applyPreset(b.dataset.preset)));
   $('.pf-rest-btn', ui).addEventListener('click', () => (state.resting ? resume() : restStop()));
   $('.pf-collapse', ui).addEventListener('click', () => { setSetting('collapsed', true); el.fab.focus(); });
   el.fab.addEventListener('click', () => { setSetting('collapsed', false); el.cmd.focus(); });
@@ -1612,7 +1987,9 @@
   portal.addEventListener('change', () => { snapshotForm(); schedule(); });
 
   let tickTimer = null;
-  function schedule() { clearTimeout(tickTimer); tickTimer = setTimeout(tick, 120); }
+  // Typing fires many events, so wait for a pause (120 ms). A portal page change is one render,
+  // so react on the next frame (16 ms) instead; that still merges a redirect's back-to-back renders.
+  function schedule(ms = 120) { clearTimeout(tickTimer); tickTimer = setTimeout(tick, ms); }
   function tick() {
     const prev = state.page;
     state.page = detectPage();
@@ -1627,6 +2004,7 @@
     checkRestore();
     if (!$('#pf-pane-translate', ui).hidden) renderWords();
     positionDog();
+    if (voice.numbers) showNumbers(true);
     mo.takeRecords(); // ignore the changes we just made ourselves
   }
   const mo = new MutationObserver(recs => {
@@ -1634,17 +2012,11 @@
       const n = r.target.nodeType === 3 ? r.target.parentElement : r.target;
       return !(n && n.closest && n.closest('.sess'));
     });
-    if (outsideTimer) schedule();
+    if (outsideTimer) schedule(16);
   });
   mo.observe(portal, { childList: true, subtree: true, characterData: true });
 
   // ---------- start ----------
-  if (q.get('mode') && PRESETS[q.get('mode')]) {
-    Object.assign(settings, presetSettings(q.get('mode'), settings));
-    q.delete('mode');
-    history.replaceState(null, '', location.pathname + (q.toString() ? '?' + q : '') + location.hash);
-    store.set('settings', settings);
-  }
   applyModes();
   renderSettings();
   loadProfileForm();
@@ -1660,11 +2032,15 @@
     const mins = r.at ? Math.round((Date.now() - r.at) / 60000) : 0;
     notice('welcome', `Welcome back${mins ? ` — you rested for ${mins < 60 ? mins + ' minutes' : Math.round(mins / 60) + ' hours'}` : ''}. Ready to pick up where you left off?`, 'info', [{ label: 'Pick up where I left off', fn: resume }]);
   } else if (!plan) {
-    const p = PRESETS[settings.preset];
-    bubble(p ? `Hi! I’m Pawthfinder. ${settings.preset === 'voice' ? 'Press the microphone and tell me what you want to do.' : 'What do you want to do today?'}` : 'Hi! I’m Pawthfinder, your guide dog for this website. What do you want to do?');
-    if (settings.listen && onboarded) {
-      // Browsers need a click before using the microphone or speaking.
-      notice('start-voice', 'Voice mode is ready. Press start, then tell me what you want to do.', 'info', [{ label: '🎤 Start talking', fn: () => { startListening(); applyPreset('voice'); } }]);
-    }
+    bubble(settings.listen ? 'Hi! I’m Pawthfinder. Tell me what you want to do.' : 'Hi! I’m Pawthfinder, your guide dog for this website. What do you want to do?');
+  }
+  // Voice users: start listening right away if the microphone is already allowed, even while
+  // the session-start picker is open ("bigger text", "start"). Otherwise one press is needed,
+  // because browsers only ask for the microphone after a click.
+  if (settings.listen && SR) {
+    const ask = () => notice('start-voice', 'Voice is ready. Press “Start talking” once, then you can do everything by voice.', 'info', [{ label: '🎤 Start talking', fn: () => startListening() }]);
+    (navigator.permissions && navigator.permissions.query ? navigator.permissions.query({ name: 'microphone' }) : Promise.reject())
+      .then(p => (p.state === 'granted' ? startListening() : ask()))
+      .catch(ask);
   }
 })();

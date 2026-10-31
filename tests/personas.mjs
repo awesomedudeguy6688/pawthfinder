@@ -284,8 +284,10 @@ await journey('Alex signs up and books a follow-up using only the keyboard', 'Al
 // Sam: voice only. Uses voice-control software (presses things by their visible name) and Pawthfinder's voice commands.
 await journey('Sam books a follow-up by voice only', 'Sam', async j => {
   const { ctx, page } = await newPersonaPage(browser, { persona: 'Sam' });
-  await page.goto(BASE + '/portal/?reset=1&mode=voice');
+  await page.goto(BASE + '/portal/?reset=1');
   await page.waitForSelector('.pf-onboard:not([hidden])');
+  // Sam answers the dog's "what helps you?" question with voice-control software.
+  for (const name of ['I talk instead of typing', 'Read things out loud', 'Sound cues']) await page.getByRole('button', { name: new RegExp(name) }).click();
   // "Click Start with 3 choices": voice-control software matches what's on screen.
   const startLabel = (await page.locator('.pf-ob-start').innerText()).replace(/[^\p{L}\p{N}\s]/gu, '').replace(/\s+/g, ' ').trim();
   const byName = page.getByRole('button', { name: startLabel });
@@ -315,8 +317,9 @@ await journey('Sam books a follow-up by voice only', 'Sam', async j => {
 // Riley: brain fog. Follows the dog's highlight with a mouse, goes slowly, takes a rest stop.
 await journey('Riley follows the dog, gets timed out, takes a rest stop', 'Riley', async j => {
   const { ctx, page } = await newPersonaPage(browser, { persona: 'Riley' });
-  await page.goto(BASE + '/portal/?reset=1&mode=cognitive&session=30');
+  await page.goto(BASE + '/portal/?reset=1&session=30');
   await page.waitForSelector('.pf-onboard:not([hidden])');
+  for (const name of ['Plain, simple words', 'One step at a time', 'Bigger text and buttons']) await page.getByRole('button', { name: new RegExp(name) }).click();
   const tiles = await page.locator('.pf-ob-tiles .pf-tile').count();
   j.notes.push(`Picker shows ${tiles} choices.`);
   if (tiles > 9) find('Riley', 'minor', 'Session-start picker', `${tiles} choices on one screen is a lot on a brain-fog day`, 'A short first screen, with “more choices” for the rest');

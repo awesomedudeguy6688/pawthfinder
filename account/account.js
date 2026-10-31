@@ -146,7 +146,7 @@
 
     const draft = editing
       ? JSON.parse(JSON.stringify(current))
-      : { name: '', email: '', phone: '', conditions: [], conditionsText: '', needs: [], acc: [], accNotes: '' };
+      : { name: '', email: '', phone: '', conditions: [], conditionsText: '', needs: (read(localStorage, 'pf-settings', {}).needs || []).slice(), acc: [], accNotes: '' };
 
     $('#conditions').innerHTML = N.conditions.map(c => tileHTML('cond', c.id, c.icon, c.label)).join('');
     $('#features').innerHTML = N.features.map(f => tileHTML('need', f.id, f.icon, f.label, f.desc)).join('');
