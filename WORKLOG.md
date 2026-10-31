@@ -2,7 +2,24 @@
 
 Changes and problems, newest round first. Kept up to date while working.
 
-## Round 3: picker, accounts, test agent (in progress)
+## Round 4: performance agent
+
+### Changes
+- **`performance-optimizer` agent** (`.claude/agents/performance-optimizer.md`): measures, finds where the time goes, changes one thing at a time, and keeps a change only if the numbers improve and the persona tests still pass. No build tools, and no changes to behavior or looks.
+- **`tests/perf.mjs`** (`npm run test:perf`): page-load and runtime measurements on a normal machine and a simulated slow device (4× CPU, 1.6 Mbps / 150 ms). Writes `tests/reports/perf-latest.md`.
+- **Baseline, slow device:**
+  - Portal with Pawthfinder: picker on screen after 1.24 s (load 1.06 s), 8 requests, 48.7 KB.
+  - Other pages: load in 0.4–0.6 s.
+  - While running: 346 ms of idle CPU per 10 s; goal → first step in 75 ms; page change → next step in 179 ms.
+- **Likely targets** (for the agent to confirm):
+  - The extension's scripts load one after another after the portal.
+  - A 120 ms wait before reacting to page changes.
+  - Timers that run every second, even when nothing changes.
+
+### Problems
+- None this round.
+
+## Round 3: picker, accounts, test agent
 
 ### Changes
 - **Session-start picker:** a full-screen dialog of 12 icon tiles ("I talk instead of typing", "Bigger text and buttons", "Plain, simple words", and so on) opens once per browser session. Choices are pre-picked from your account or your last session. Big-text, contrast, font and motion choices preview live. Has Read-this-to-me, keyboard focus trap, Escape to skip, and `?onboard=0` to skip it in tests.

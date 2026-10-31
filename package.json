@@ -6,7 +6,8 @@
   "scripts": {
     "start": "python3 -m http.server 8000",
     "test:personas": "node tests/personas.mjs",
-    "test:setup": "npx playwright install chromium"
+    "test:setup": "npx playwright install chromium",
+    "test:perf": "node tests/perf.mjs"
   },
   "devDependencies": {
     "@axe-core/playwright": "^4.10.0",

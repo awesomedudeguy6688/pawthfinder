@@ -1,0 +1,338 @@
+{
+  "runs": 3,
+  "results": [
+    {
+      "profile": "Normal machine",
+      "label": "Landing page",
+      "url": "/",
+      "fcp": 112,
+      "lcp": 112,
+      "dcl": 64.69999998807907,
+      "load": 65.69999998807907,
+      "ready": null,
+      "cls": 0.018728363749377443,
+      "long": 0,
+      "script": 2.118,
+      "style": 3.828,
+      "layout": 29.797,
+      "bytes": 7614,
+      "requests": 3,
+      "domNodes": 209,
+      "heap": 999368,
+      "byType": {
+        "Document": 1,
+        "Stylesheet": 1,
+        "Script": 1
+      }
+    },
+    {
+      "profile": "Normal machine",
+      "label": "Sign in",
+      "url": "/account/login.html",
+      "fcp": 88,
+      "lcp": 88,
+      "dcl": 61.6000000089407,
+      "load": 61.70000000298023,
+      "ready": null,
+      "cls": 0,
+      "long": 0,
+      "script": 5.997,
+      "style": 2.837,
+      "layout": 15.466000000000001,
+      "bytes": 23734,
+      "requests": 7,
+      "domNodes": 49,
+      "heap": 1166496,
+      "byType": {
+        "Document": 1,
+        "Stylesheet": 3,
+        "Script": 3
+      }
+    },
+    {
+      "profile": "Normal machine",
+      "label": "Sign up",
+      "url": "/account/signup.html",
+      "fcp": 104,
+      "lcp": 96,
+      "dcl": 73,
+      "load": 74.79999999701977,
+      "ready": null,
+      "cls": 0,
+      "long": 0,
+      "script": 6.412,
+      "style": 2.226,
+      "layout": 18.456,
+      "bytes": 24477,
+      "requests": 7,
+      "domNodes": 226,
+      "heap": 1251236,
+      "byType": {
+        "Document": 1,
+        "Stylesheet": 3,
+        "Script": 3
+      }
+    },
+    {
+      "profile": "Normal machine",
+      "label": "Portal without Pawthfinder",
+      "url": "/portal/?pf=0&reset=1",
+      "fcp": 72,
+      "lcp": 72,
+      "dcl": 34.900000005960464,
+      "load": 40.70000000298023,
+      "ready": null,
+      "cls": 0.05856515373352855,
+      "long": 0,
+      "script": 3.811,
+      "style": 5.218,
+      "layout": 8.796999999999999,
+      "bytes": 7632,
+      "requests": 3,
+      "domNodes": 24,
+      "heap": 1040436,
+      "byType": {
+        "Document": 1,
+        "Stylesheet": 1,
+        "Script": 1
+      }
+    },
+    {
+      "profile": "Normal machine",
+      "label": "Portal with Pawthfinder",
+      "url": "/portal/?reset=1",
+      "fcp": 92,
+      "lcp": 200,
+      "dcl": 36.5,
+      "load": 110.70000000298023,
+      "ready": 179,
+      "cls": 0.1624025432539674,
+      "long": 0,
+      "script": 29.424,
+      "style": 14.111,
+      "layout": 36.952,
+      "bytes": 49879,
+      "requests": 8,
+      "domNodes": 457,
+      "heap": 3257628,
+      "byType": {
+        "Document": 1,
+        "Stylesheet": 2,
+        "Script": 5
+      }
+    },
+    {
+      "profile": "Slow device",
+      "label": "Landing page",
+      "url": "/",
+      "fcp": 596,
+      "lcp": 596,
+      "dcl": 544.6999999880791,
+      "load": 553.1999999880791,
+      "ready": null,
+      "cls": 0.018728363749377443,
+      "long": 115,
+      "script": 7.422,
+      "style": 22.9,
+      "layout": 142.474,
+      "bytes": 7614,
+      "requests": 3,
+      "domNodes": 209,
+      "heap": 1000912,
+      "byType": {
+        "Document": 1,
+        "Stylesheet": 1,
+        "Script": 1
+      }
+    },
+    {
+      "profile": "Slow device",
+      "label": "Sign in",
+      "url": "/account/login.html",
+      "fcp": 588,
+      "lcp": 588,
+      "dcl": 575.1000000089407,
+      "load": 576.4000000059605,
+      "ready": null,
+      "cls": 0,
+      "long": 32,
+      "script": 14.513,
+      "style": 12.975,
+      "layout": 65.681,
+      "bytes": 23734,
+      "requests": 7,
+      "domNodes": 49,
+      "heap": 1168040,
+      "byType": {
+        "Document": 1,
+        "Stylesheet": 3,
+        "Script": 3
+      }
+    },
+    {
+      "profile": "Slow device",
+      "label": "Sign up",
+      "url": "/account/signup.html",
+      "fcp": 620,
+      "lcp": 620,
+      "dcl": 635.0999999940395,
+      "load": 635.2999999970198,
+      "ready": null,
+      "cls": 0,
+      "long": 62,
+      "script": 37.492,
+      "style": 11.030999999999999,
+      "layout": 88.119,
+      "bytes": 24477,
+      "requests": 7,
+      "domNodes": 226,
+      "heap": 1252780,
+      "byType": {
+        "Document": 1,
+        "Stylesheet": 3,
+        "Script": 3
+      }
+    },
+    {
+      "profile": "Slow device",
+      "label": "Portal without Pawthfinder",
+      "url": "/portal/?pf=0&reset=1",
+      "fcp": 464,
+      "lcp": 464,
+      "dcl": 435.70000000298023,
+      "load": 435.79999999701977,
+      "ready": null,
+      "cls": 0.05856515373352855,
+      "long": 0,
+      "script": 19.091,
+      "style": 18.091,
+      "layout": 20.164,
+      "bytes": 7632,
+      "requests": 3,
+      "domNodes": 24,
+      "heap": 1040436,
+      "byType": {
+        "Document": 1,
+        "Stylesheet": 1,
+        "Script": 1
+      }
+    },
+    {
+      "profile": "Slow device",
+      "label": "Portal with Pawthfinder",
+      "url": "/portal/?reset=1",
+      "fcp": 500,
+      "lcp": 1136,
+      "dcl": 483,
+      "load": 1056.699999988079,
+      "ready": 1240,
+      "cls": 0.1624025432539674,
+      "long": 139,
+      "script": 141.91799999999998,
+      "style": 53.782999999999994,
+      "layout": 127.48300000000002,
+      "bytes": 49879,
+      "requests": 8,
+      "domNodes": 457,
+      "heap": 3259108,
+      "byType": {
+        "Document": 1,
+        "Stylesheet": 2,
+        "Script": 5
+      }
+    }
+  ],
+  "runtime": [
+    {
+      "profile": "Normal machine",
+      "idleScript": 6.478999999999995,
+      "idleTask": 51.84100000000002,
+      "react": 21.799999997019768,
+      "nav": 131.79999999701977
+    },
+    {
+      "profile": "Slow device",
+      "idleScript": 21.788,
+      "idleTask": 345.56300000000005,
+      "react": 75.29999999701977,
+      "nav": 178.59999999403954
+    }
+  ],
+  "files": [
+    {
+      "file": "pawthfinder/pawthfinder.js",
+      "raw": 93353,
+      "gz": 28752
+    },
+    {
+      "file": "pawthfinder/pawthfinder.css",
+      "raw": 23828,
+      "gz": 5750
+    },
+    {
+      "file": "account/account.js",
+      "raw": 18020,
+      "gz": 5863
+    },
+    {
+      "file": "portal/portal.js",
+      "raw": 14423,
+      "gz": 5186
+    },
+    {
+      "file": "index.html",
+      "raw": 10419,
+      "gz": 3964
+    },
+    {
+      "file": "pawthfinder/knowledge.js",
+      "raw": 8105,
+      "gz": 3333
+    },
+    {
+      "file": "account/signup.html",
+      "raw": 6754,
+      "gz": 1874
+    },
+    {
+      "file": "account/account.css",
+      "raw": 6499,
+      "gz": 1892
+    },
+    {
+      "file": "site.css",
+      "raw": 6371,
+      "gz": 2023
+    },
+    {
+      "file": "pawthfinder/needs.js",
+      "raw": 6019,
+      "gz": 2381
+    },
+    {
+      "file": "portal/portal.css",
+      "raw": 3591,
+      "gz": 1186
+    },
+    {
+      "file": "account/profile.html",
+      "raw": 2853,
+      "gz": 1104
+    },
+    {
+      "file": "account/login.html",
+      "raw": 2848,
+      "gz": 1131
+    },
+    {
+      "file": "pawthfinder/dog.js",
+      "raw": 2621,
+      "gz": 1046
+    },
+    {
+      "file": "portal/index.html",
+      "raw": 1268,
+      "gz": 678
+    }
+  ]
+}
