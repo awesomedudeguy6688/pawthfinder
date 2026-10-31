@@ -1,0 +1,65 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Sign in — Pawthfinder</title>
+<link rel="stylesheet" href="../site.css">
+<link rel="stylesheet" href="../pawthfinder/pawthfinder.css">
+<link rel="stylesheet" href="account.css">
+</head>
+<body data-page="login">
+<a class="skip" href="#main">Skip to main content</a>
+<header class="top">
+  <div class="wrap nav">
+    <a class="logo" href="../index.html"><span aria-hidden="true">🐾</span> Pawthfinder</a>
+  </div>
+</header>
+
+<main id="main" class="pf-ui acct">
+  <div class="acct-card">
+    <h1>Sign in</h1>
+    <p class="lead">Your choices and your ready-to-paste needs, in one place. There’s no time limit on this page.</p>
+
+    <div class="err-summary" role="alert" tabindex="-1" hidden></div>
+
+    <form id="login-form" novalidate>
+      <div class="field">
+        <label for="email">Email</label>
+        <input id="email" name="email" type="email" autocomplete="email" inputmode="email" spellcheck="false" required aria-describedby="email-err">
+        <p class="field-err" id="email-err" hidden></p>
+      </div>
+      <div class="field">
+        <label for="password">Password</label>
+        <div class="pw">
+          <input id="password" name="password" type="password" autocomplete="current-password" required aria-describedby="password-err">
+          <button type="button" class="btn show-pw" aria-controls="password" aria-pressed="false" aria-label="Show password">Show</button>
+        </div>
+        <p class="field-err" id="password-err" hidden></p>
+      </div>
+      <button type="button" class="big-toggle" id="remember" aria-pressed="false">
+        <span class="tick" aria-hidden="true"></span>
+        <span>Keep me signed in on this device</span>
+      </button>
+      <button type="submit" class="btn primary big">Sign in</button>
+    </form>
+
+    <div class="or"><span>or</span></div>
+    <button type="button" class="btn big" id="demo-account"><span aria-hidden="true">🐕</span> Try the demo account</button>
+
+    <p class="switch">New here? <a id="to-signup" href="signup.html">Make a free account</a>. It takes about 2 minutes.</p>
+
+    <details class="help">
+      <summary>Forgot your password?</summary>
+      <p>Your account is kept only on this device, so there’s no reset email. You can make a new account with the same email after deleting the old one, or with a different email.</p>
+    </details>
+    <p class="privacy"><span aria-hidden="true">🔒</span> Everything stays on this device. Nothing is sent to a server.</p>
+  </div>
+</main>
+<div id="live" class="pf-sr" role="status" aria-live="polite"></div>
+
+<script src="../pawthfinder/knowledge.js"></script>
+<script src="../pawthfinder/needs.js"></script>
+<script src="account.js"></script>
+</body>
+</html>

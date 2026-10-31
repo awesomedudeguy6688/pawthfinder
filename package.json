@@ -1,0 +1,15 @@
+{
+  "name": "pawthfinder",
+  "private": true,
+  "type": "module",
+  "description": "Pawthfinder: a guide dog for medical websites (hackathon prototype)",
+  "scripts": {
+    "start": "python3 -m http.server 8000",
+    "test:personas": "node tests/personas.mjs",
+    "test:setup": "npx playwright install chromium"
+  },
+  "devDependencies": {
+    "@axe-core/playwright": "^4.10.0",
+    "playwright": "^1.50.0"
+  }
+}

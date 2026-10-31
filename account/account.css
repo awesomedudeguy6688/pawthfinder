@@ -1,0 +1,102 @@
+/* Account pages: big, calm, high-contrast. Tiles come from pawthfinder.css (.pf-tile). */
+body { font-size: 20px; }
+.top .nav { gap: 12px; }
+.acct { font-size: 20px; line-height: 1.55; padding: 32px 20px 64px; }
+html.pf-large .acct { font-size: 24px; }
+.acct-card { max-width: 640px; margin: 0 auto; }
+.acct.wide .acct-card { max-width: 900px; }
+.acct h1 { font-size: 2.2em; margin: 0 0 8px; }
+.acct h2 { font-size: 1.45em; margin: 32px 0 10px; }
+.acct h2:focus { outline: none; }
+.acct h3 { font-size: 1.1em; margin: 0 0 6px; }
+.acct .lead { font-size: 1.1em; color: var(--pf-muted); margin: 0 0 24px; }
+.acct .muted, .acct .optional { color: var(--pf-muted); font-weight: 400; }
+
+.field { margin: 0 0 22px; }
+.field label { display: block; font-weight: 700; margin-bottom: 4px; }
+.hint { margin: 0 0 6px; color: var(--pf-muted); font-size: .9em; }
+.acct input[type=text], .acct input[type=email], .acct input[type=tel], .acct input[type=password], .acct textarea {
+  display: block; width: 100%; font: inherit; color: var(--pf-ink); background: #fff;
+  min-height: 56px; padding: 12px 14px; border: 3px solid #8a7f6c; border-radius: 12px;
+}
+.acct textarea { min-height: 90px; }
+.acct input:focus, .acct textarea:focus { border-color: var(--pf-teal); outline: 4px solid var(--pf-amber); outline-offset: 2px; }
+.acct input[aria-invalid="true"] { border-color: #b3261e; }
+.acct input[readonly] { background: #f1ece2; }
+.field-err { margin: 6px 0 0; color: #b3261e; font-weight: 700; }
+.field-err::before { content: "⚠️ "; }
+.pw { display: flex; gap: 8px; }
+.pw input { flex: 1; }
+.pw .btn { min-width: 92px; }
+
+.acct .btn { font: 700 1em inherit; min-height: 52px; padding: 10px 20px; border-radius: 14px; cursor: pointer; }
+.acct .btn.big { width: 100%; min-height: 60px; font-size: 1.1em; }
+.acct .btn.small { min-height: 44px; padding: 6px 14px; font-size: .9em; margin-top: 8px; }
+.top .btn { min-height: 44px; padding: 6px 16px; border-radius: 12px; font: 700 16px system-ui, sans-serif; cursor: pointer; }
+
+.big-toggle {
+  display: flex; align-items: center; gap: 14px; width: 100%; margin: 4px 0 22px; padding: 12px 16px; min-height: 60px;
+  font: 600 1em inherit; color: var(--pf-ink); text-align: left; background: #fff; border: 3px solid var(--pf-line); border-radius: 14px; cursor: pointer;
+}
+.big-toggle .tick { flex: none; width: 34px; height: 34px; border-radius: 10px; border: 3px solid #8a7f6c; display: grid; place-items: center; font-weight: 800; }
+.big-toggle[aria-pressed="true"] { border-color: var(--pf-teal); background: #e3f1f3; }
+.big-toggle[aria-pressed="true"] .tick { background: var(--pf-teal); border-color: var(--pf-teal); color: #fff; }
+.big-toggle[aria-pressed="true"] .tick::after { content: "✓"; }
+
+.err-summary { border: 4px solid #b3261e; border-radius: 14px; padding: 14px 18px; margin: 0 0 22px; background: #fdecea; }
+.err-summary:focus { outline: 4px solid var(--pf-amber); outline-offset: 2px; }
+.err-summary h2 { margin: 0 0 6px; font-size: 1.1em; color: #8c1d18; }
+.err-summary ul { margin: 0; padding-left: 20px; }
+.err-summary a { color: #8c1d18; font-weight: 700; }
+
+.or { display: flex; align-items: center; gap: 12px; color: var(--pf-muted); margin: 22px 0; }
+.or::before, .or::after { content: ""; flex: 1; border-top: 2px solid var(--pf-line); }
+.switch { margin: 22px 0 10px; font-size: 1.05em; }
+.help summary { cursor: pointer; font-weight: 700; padding: 8px 0; min-height: 44px; }
+.privacy { color: var(--pf-muted); font-size: .9em; margin-top: 20px; }
+
+.step-count { font-weight: 800; color: var(--pf-teal); margin: 0 0 8px; }
+.stepper { display: grid; grid-template-columns: repeat(5, 1fr); gap: 6px; list-style: none; padding: 0; margin: 0 0 8px; font-size: .78em; }
+.stepper li { padding: 8px 6px; border-radius: 10px; background: #efe6d6; text-align: center; color: var(--pf-muted); font-weight: 600; }
+.stepper li span { display: block; font-size: 1.5em; }
+.stepper li.now { background: var(--pf-teal); color: #fff; }
+.stepper li.done { background: #d8ece0; color: #1f5a3a; }
+.step > p { max-width: 42em; }
+.step .pf-tiles { margin: 16px 0 22px; grid-template-columns: repeat(auto-fill, minmax(170px, 1fr)); }
+.step-nav { display: flex; gap: 12px; margin-top: 10px; }
+.step-nav .btn.big { width: auto; flex: 1; }
+
+.review-block { background: #fff; border: 2px solid var(--pf-line); border-radius: 14px; padding: 14px 18px; margin: 0 0 12px; }
+.review-block ul { margin: 0; padding-left: 22px; }
+.review-block p { margin: 0; }
+
+.banner { background: #effaf3; border: 3px solid #1f7a4d; border-radius: 14px; padding: 12px 18px; margin: 10px 0 0; }
+.banner p { margin: 0; }
+.kit { display: grid; gap: 16px; margin: 16px 0; }
+.kit-item { background: #fff; border: 2px solid var(--pf-line); border-radius: 16px; padding: 16px 18px; }
+.kit-item label h3 { color: var(--pf-teal); }
+.kit-item .btn { margin-top: 10px; }
+.summary-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; }
+.summary-grid > div { background: #fff; border: 2px solid var(--pf-line); border-radius: 14px; padding: 14px 16px; }
+.chips { list-style: none; padding: 0; margin: 0; }
+.chips li { padding: 4px 0; }
+.danger { border-top: 2px solid var(--pf-line); margin-top: 40px; }
+.danger .btn { border-color: #b3261e; color: #b3261e; }
+
+/* Looks the person picked (also used by the extension) */
+html.pf-hc body, html.pf-hc .top { background: #000; color: #fff; }
+html.pf-hc .logo, html.pf-hc a { color: #ffe14d; }
+html.pf-hc .acct input, html.pf-hc .acct textarea, html.pf-hc .big-toggle, html.pf-hc .review-block, html.pf-hc .kit-item,
+html.pf-hc .summary-grid > div, html.pf-hc .stepper li, html.pf-hc .err-summary, html.pf-hc .banner { background: #000; color: #fff; border-color: #fff; }
+html.pf-hc .acct .btn { background: #000; color: #7fe3f0; border-color: #7fe3f0; }
+html.pf-hc .acct .btn.primary, html.pf-hc .stepper li.now { background: #7fe3f0; color: #000; }
+html.pf-hc .err-summary h2, html.pf-hc .err-summary a, html.pf-hc .field-err { color: #ffb4ab; }
+html.pf-dys body { font-family: "OpenDyslexic", "Atkinson Hyperlegible", "Lexend", Verdana, sans-serif; letter-spacing: .04em; word-spacing: .14em; }
+html.pf-rm *, html.pf-rm *::before { transition: none !important; animation: none !important; }
+
+@media (max-width: 700px) {
+  .stepper { grid-template-columns: repeat(5, 1fr); font-size: 0; }
+  .stepper li span { font-size: 22px; }
+  .summary-grid { grid-template-columns: 1fr; }
+  .step-nav { flex-direction: column-reverse; }
+}

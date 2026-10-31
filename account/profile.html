@@ -1,0 +1,61 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>My account — Pawthfinder</title>
+<link rel="stylesheet" href="../site.css">
+<link rel="stylesheet" href="../pawthfinder/pawthfinder.css">
+<link rel="stylesheet" href="account.css">
+</head>
+<body data-page="profile">
+<a class="skip" href="#main">Skip to main content</a>
+<header class="top">
+  <div class="wrap nav">
+    <a class="logo" href="../index.html"><span aria-hidden="true">🐾</span> Pawthfinder</a>
+    <button type="button" class="btn" id="sign-out">Sign out</button>
+  </div>
+</header>
+
+<main id="main" class="pf-ui acct wide">
+  <div class="acct-card">
+    <h1 id="hello">Hi!</h1>
+    <div class="banner" id="banner" role="status"></div>
+
+    <section aria-labelledby="h-kit">
+      <h2 id="h-kit">Your paste kit</h2>
+      <p>Your needs, already written out. Press <strong>Copy</strong>, then paste into any form that asks about accessibility, accommodations or “anything else we should know”. You can edit the text first.</p>
+      <div id="kit" class="kit"></div>
+      <button type="button" class="btn big" id="copy-all"><span aria-hidden="true">📋</span> Copy everything</button>
+    </section>
+
+    <section aria-labelledby="h-go">
+      <h2 id="h-go">Use it on a patient portal</h2>
+      <p>Pawthfinder already knows your choices. It will set itself up for you, and its Fetch tab can put your needs straight into a form.</p>
+      <a class="btn primary big" href="../portal/">Open the patient portal with Pawthfinder <span aria-hidden="true">🐾</span></a>
+    </section>
+
+    <section aria-labelledby="h-needs">
+      <h2 id="h-needs">What you told us</h2>
+      <div class="summary-grid">
+        <div><h3>Your disabilities</h3><ul class="chips" id="my-conditions"></ul><a class="btn small" href="signup.html?edit=1#step-conditions">Change</a></div>
+        <div><h3>Online</h3><ul class="chips" id="my-features"></ul><a class="btn small" href="signup.html?edit=1#step-features">Change</a></div>
+        <div><h3>At appointments</h3><ul class="chips" id="my-accs"></ul><a class="btn small" href="signup.html?edit=1#step-accs">Change</a></div>
+      </div>
+      <p><a href="signup.html?edit=1">Change my name, email, phone or password</a></p>
+    </section>
+
+    <section aria-labelledby="h-danger" class="danger">
+      <h2 id="h-danger">Delete my account</h2>
+      <p id="delete-msg">This removes your account and paste kit from this device.</p>
+      <button type="button" class="btn" id="delete">Delete my account</button>
+    </section>
+  </div>
+</main>
+<div id="live" class="pf-sr" role="status" aria-live="polite"></div>
+
+<script src="../pawthfinder/knowledge.js"></script>
+<script src="../pawthfinder/needs.js"></script>
+<script src="account.js"></script>
+</body>
+</html>

@@ -1,0 +1,115 @@
+{
+  "journeys": [
+    {
+      "name": "Automated WCAG scan of every page",
+      "persona": "Scan",
+      "ok": true,
+      "notes": [
+        "Portal problems found by axe: 4 without Pawthfinder, 0 with it."
+      ],
+      "started": 1793463727449,
+      "secs": 7
+    },
+    {
+      "name": "Alex signs up and books a follow-up using only the keyboard",
+      "persona": "Alex",
+      "ok": true,
+      "notes": [
+        "Signed up with the keyboard only.",
+        "Copied from the paste kit: “I am blind or have low vision. The best way to reach me is alex1793463734465@example.com.…”",
+        "Picker opened with 2 choices already picked from Alex’s account.",
+        "16 keyboard actions; 37 screen-reader announcements."
+      ],
+      "started": 1793463734406,
+      "secs": 19
+    },
+    {
+      "name": "Sam books a follow-up by voice only",
+      "persona": "Sam",
+      "ok": true,
+      "notes": [
+        "17 spoken commands.",
+        "“choose first” → Tick the “I am not a robot” box.",
+        "“tick it” → Press “Submit Request”.",
+        "“press it” → Done! Your appointment request was sent. The clinic still has to appro"
+      ],
+      "started": 1793463753577,
+      "secs": 11
+    },
+    {
+      "name": "Riley follows the dog, gets timed out, takes a rest stop",
+      "persona": "Riley",
+      "ok": true,
+      "notes": [
+        "Picker shows 12 choices.",
+        "Waited 31 s on the form (the portal signs out after 30 s).",
+        "17 different instructions; longest 21 words; average grade 2.9.",
+        "Confirmation page at “Simplest”: 54 words, grade 6.9."
+      ],
+      "started": 1793463764559,
+      "secs": 48
+    },
+    {
+      "name": "Morgan uses the app at 200% zoom with bigger text and strong contrast",
+      "persona": "Morgan",
+      "ok": true,
+      "notes": [
+        "Had to scroll to find Start in the picker.",
+        "Panel docks at the bottom (207px of 450px tall); 54% of the view is left for the website."
+      ],
+      "started": 1793463812862,
+      "secs": 3
+    }
+  ],
+  "findings": [
+    {
+      "persona": "Riley",
+      "severity": "minor",
+      "where": "Session-start picker",
+      "what": "12 choices on one screen is a lot on a brain-fog day",
+      "expected": "A short first screen, with “more choices” for the rest"
+    }
+  ],
+  "axe": [
+    {
+      "label": "Landing page",
+      "violations": []
+    },
+    {
+      "label": "Sign in",
+      "violations": []
+    },
+    {
+      "label": "Sign up: step 1",
+      "violations": []
+    },
+    {
+      "label": "Session-start picker",
+      "violations": []
+    },
+    {
+      "label": "Pawthfinder panel",
+      "violations": []
+    },
+    {
+      "label": "Portal after Pawthfinder repairs",
+      "violations": []
+    },
+    {
+      "label": "Portal without Pawthfinder (baseline)",
+      "violations": [
+        {
+          "id": "color-contrast",
+          "impact": "serious",
+          "help": "Elements must meet minimum color contrast ratio thresholds",
+          "nodes": 4,
+          "sample": ".sub"
+        }
+      ]
+    },
+    {
+      "label": "Panel, strong contrast",
+      "violations": []
+    }
+  ]
+}

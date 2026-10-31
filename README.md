@@ -4,6 +4,8 @@ Hackathon prototype. An animated guide dog sits on top of a patient portal, read
 
 - `index.html` is the pitch/landing page, with links to the three demo personas.
 - `portal/` is **MyHealthLink**, a mock patient portal that is inaccessible on purpose: tiny mouse-only buttons, unlabeled fields, jargon, a hidden 4-minute session limit that erases your form, a mouse-only robot check, a scanned PDF, and a phone-only workflow.
+- `account/` holds Pawthfinder accounts: an accessible sign-in, a step-by-step sign-up where people pick their disabilities and needs as icon tiles, and a profile page with a **paste kit** (copy-ready text of their needs for any form).
+- `tests/` + `.claude/agents/disabled-user-tester.md` are the disabled-user test agent (see below).
 - `pawthfinder/` is the "extension". It's written like a content script: it only reads and changes the portal's DOM and never calls portal code. The portal page loads it to stand in for an installed extension.
 
 ## Run it
@@ -42,8 +44,32 @@ Any username and password work. Goals the planner understands: booking an appoin
 | Speak up: accommodation letter, PDF and phone templates, printable card | ✅ (stretch) |
 | Rest stops: save your place and answers, restore after a timeout | ✅ |
 
+## Session-start picker
+
+When a session starts, Pawthfinder opens a dialog of big icon tiles ("I talk instead of typing", "Bigger text and buttons", "Plain, simple words"…). If you're signed in, it picks your saved choices for you. Add `?onboard=0` to skip it.
+
+## Testing as disabled users
+
+```sh
+npm install
+npx playwright install chromium   # once
+npm run test:personas             # or: npm run test:personas -- alex
+```
+
+This plays four personas in headless Chromium and writes `tests/reports/latest.md`, with screenshots:
+
+- **Alex:** keyboard only, with a screen reader.
+- **Sam:** voice only.
+- **Riley:** brain fog. Follows the dog's highlight and gets timed out.
+- **Morgan:** 200% zoom.
+
+It also runs axe-core on every page. On a bare Linux server you may need the system libraries and fonts Chromium uses. Without fonts it crashes at random.
+
+For deeper exploratory testing, ask Claude Code to *"use the disabled-user-tester agent"*. It runs the harness, keeps exploring in character, and writes a dated findings report in `tests/reports/`.
+
 ## Honest limits
 
 - Page understanding and plain-language rewriting use rules and a hand-written glossary (`pawthfinder/knowledge.js`). That makes the demo offline and repeatable, but the task flows are written for MyHealthLink. The production design swaps in an LLM for unfamiliar portals.
-- Everything is stored in `localStorage`. There is no server.
+- Everything is stored in `localStorage`, including accounts (salted SHA-256 password hashes). That's fine for a demo but not real security. There is no server.
+- The personas are simulated: scripted keyboard and voice input, and the accessibility tree standing in for a screen reader. Test with real assistive tech and real users before making claims.
 - Before pitching, check the disability statistic and its CDC link on the landing page.

@@ -1,0 +1,127 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Make an account — Pawthfinder</title>
+<link rel="stylesheet" href="../site.css">
+<link rel="stylesheet" href="../pawthfinder/pawthfinder.css">
+<link rel="stylesheet" href="account.css">
+</head>
+<body data-page="signup">
+<a class="skip" href="#main">Skip to main content</a>
+<header class="top">
+  <div class="wrap nav">
+    <a class="logo" href="../index.html"><span aria-hidden="true">🐾</span> Pawthfinder</a>
+  </div>
+</header>
+
+<main id="main" class="pf-ui acct wide">
+  <div class="acct-card">
+    <h1 id="page-title">Make your Pawthfinder account</h1>
+    <p class="lead">Tell us once what helps you. We write it out for you, ready to paste into any form. Take your time — there’s no time limit, and you can skip anything.</p>
+
+    <p class="step-count" id="step-count" aria-live="polite">Step 1 of 5</p>
+    <ol class="stepper" aria-label="Sign-up steps">
+      <li class="now" aria-current="step"><span aria-hidden="true">👤</span> About you</li>
+      <li><span aria-hidden="true">💛</span> Your disabilities</li>
+      <li><span aria-hidden="true">🖥️</span> Online</li>
+      <li><span aria-hidden="true">🏥</span> Appointments</li>
+      <li><span aria-hidden="true">✅</span> Check</li>
+    </ol>
+
+    <section class="step" id="step-about" aria-labelledby="h-about">
+      <h2 id="h-about" tabindex="-1">About you</h2>
+      <div class="err-summary" role="alert" tabindex="-1" hidden></div>
+      <form id="about-form" novalidate>
+        <div class="field">
+          <label for="name">Your name</label>
+          <p class="hint" id="name-hint">The name you like to be called. We use it to greet you and to sign your letters.</p>
+          <input id="name" type="text" autocomplete="name" required aria-describedby="name-hint name-err">
+          <p class="field-err" id="name-err" hidden></p>
+        </div>
+        <div class="field">
+          <label for="email">Email</label>
+          <p class="hint" id="email-hint">You’ll use this to sign in.</p>
+          <input id="email" type="email" autocomplete="email" inputmode="email" spellcheck="false" required aria-describedby="email-hint email-err">
+          <p class="field-err" id="email-err" hidden></p>
+        </div>
+        <div class="field">
+          <label for="phone">Phone <span class="optional">(optional)</span></label>
+          <p class="hint" id="phone-hint">Only added to your letters, so clinics can reach you.</p>
+          <input id="phone" type="tel" autocomplete="tel" aria-describedby="phone-hint">
+        </div>
+        <div class="field">
+          <label for="password">Password</label>
+          <p class="hint" id="password-hint">At least 8 characters. A short sentence you’ll remember works well.</p>
+          <div class="pw">
+            <input id="password" type="password" autocomplete="new-password" aria-describedby="password-hint password-err">
+            <button type="button" class="btn show-pw" aria-controls="password" aria-pressed="false" aria-label="Show password">Show</button>
+          </div>
+          <p class="field-err" id="password-err" hidden></p>
+        </div>
+        <div class="step-nav">
+          <button type="submit" class="btn primary big">Next <span aria-hidden="true">→</span></button>
+        </div>
+      </form>
+    </section>
+
+    <section class="step" id="step-conditions" aria-labelledby="h-conditions" hidden>
+      <h2 id="h-conditions" tabindex="-1">Tell us about your disabilities <span class="optional">(optional)</span></h2>
+      <p>Pick any that describe you. You decide what to share: it only goes where you paste it. You can skip this.</p>
+      <div class="pf-tiles" id="conditions" role="group" aria-labelledby="h-conditions"></div>
+      <div class="field">
+        <label for="conditions-text">Anything else, in your own words <span class="optional">(optional)</span></label>
+        <textarea id="conditions-text" rows="2"></textarea>
+      </div>
+      <div class="step-nav">
+        <button type="button" class="btn big" data-back><span aria-hidden="true">←</span> Back</button>
+        <button type="button" class="btn primary big" data-next>Next <span aria-hidden="true">→</span></button>
+      </div>
+    </section>
+
+    <section class="step" id="step-features" aria-labelledby="h-features" hidden>
+      <h2 id="h-features" tabindex="-1">What helps you use websites?</h2>
+      <p>Pick everything that helps. You’ll see some of them change this page right away.</p>
+      <div class="pf-tiles" id="features" role="group" aria-labelledby="h-features"></div>
+      <div class="step-nav">
+        <button type="button" class="btn big" data-back><span aria-hidden="true">←</span> Back</button>
+        <button type="button" class="btn primary big" data-next>Next <span aria-hidden="true">→</span></button>
+      </div>
+    </section>
+
+    <section class="step" id="step-accs" aria-labelledby="h-accs" hidden>
+      <h2 id="h-accs" tabindex="-1">What helps you at appointments?</h2>
+      <p>We’ll write these into your paste kit and your request letters.</p>
+      <div class="pf-tiles" id="accs" role="group" aria-labelledby="h-accs"></div>
+      <div class="field">
+        <label for="acc-notes">Anything else the clinic should know <span class="optional">(optional)</span></label>
+        <textarea id="acc-notes" rows="2"></textarea>
+      </div>
+      <div class="step-nav">
+        <button type="button" class="btn big" data-back><span aria-hidden="true">←</span> Back</button>
+        <button type="button" class="btn primary big" data-next>Next <span aria-hidden="true">→</span></button>
+      </div>
+    </section>
+
+    <section class="step" id="step-review" aria-labelledby="h-review" hidden>
+      <h2 id="h-review" tabindex="-1">Check everything</h2>
+      <p>Change anything that isn’t right. Then you’re done.</p>
+      <div id="review"></div>
+      <div class="step-nav">
+        <button type="button" class="btn big" data-back><span aria-hidden="true">←</span> Back</button>
+        <button type="button" class="btn primary big" id="finish">Make my account <span aria-hidden="true">🐾</span></button>
+      </div>
+    </section>
+
+    <p class="switch">Already have an account? <a id="to-login" href="login.html">Sign in</a></p>
+    <p class="privacy"><span aria-hidden="true">🔒</span> Everything stays on this device. Nothing is sent to a server.</p>
+  </div>
+</main>
+<div id="live" class="pf-sr" role="status" aria-live="polite"></div>
+
+<script src="../pawthfinder/knowledge.js"></script>
+<script src="../pawthfinder/needs.js"></script>
+<script src="account.js"></script>
+</body>
+</html>

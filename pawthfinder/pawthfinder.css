@@ -282,3 +282,88 @@ html.pf-dys .portal .fine, html.pf-dys .portal .notice { text-align: left; max-w
 html.pf-rm .pf-ui *, html.pf-rm .pf-ui *::before, html.pf-rm .pf-ui *::after, html.pf-rm .pf-dog, html.pf-rm .pf-dog-body {
   animation: none !important; transition: none !important;
 }
+
+/* ---------- icon tiles (session picker, Stay close, Translate, Speak up) ---------- */
+.pf-tiles { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 10px; }
+.pf-tiles-sm { grid-template-columns: 1fr 1fr; gap: 8px; }
+.pf-tiles-3 { grid-template-columns: repeat(3, 1fr); gap: 6px; margin-bottom: 8px; }
+.pf-tile {
+  position: relative; display: flex; flex-direction: column; align-items: center; justify-content: flex-start; gap: 4px;
+  min-height: 120px; padding: 14px 10px 12px; text-align: center; cursor: pointer;
+  font: inherit; color: var(--pf-ink); background: var(--pf-card);
+  border: 3px solid var(--pf-line); border-radius: 18px;
+  transition: transform .12s, border-color .12s, background .12s;
+}
+.pf-tiles-sm .pf-tile, .pf-tiles-3 .pf-tile { min-height: 92px; padding: 10px 6px; border-radius: 14px; }
+.pf-tile:hover { border-color: var(--pf-teal-2); transform: translateY(-1px); }
+.pf-tile-icon { font-size: 2.6em; line-height: 1.1; }
+.pf-tiles-sm .pf-tile-icon, .pf-tiles-3 .pf-tile-icon { font-size: 1.9em; }
+.pf-tile-label { font-weight: 700; line-height: 1.25; }
+.pf-tile-desc { font-size: .82em; color: var(--pf-muted); line-height: 1.3; }
+.pf-tiles-sm .pf-tile-desc { display: none; }
+.pf-tile[aria-pressed="true"] { border-color: var(--pf-teal); background: #e3f1f3; box-shadow: inset 0 0 0 2px var(--pf-teal); }
+.pf-tile[aria-pressed="true"]::after {
+  content: "✓"; position: absolute; top: 6px; right: 8px; width: 26px; height: 26px; border-radius: 50%;
+  display: grid; place-items: center; background: var(--pf-teal); color: #fff; font-weight: 800; font-size: 15px;
+}
+html.pf-hc .pf-tile[aria-pressed="true"] { background: #003b44; }
+html.pf-hc .pf-tile[aria-pressed="true"]::after { color: #000; }
+
+/* ---------- session-start picker ---------- */
+.pf-onboard {
+  position: fixed; inset: 0; z-index: 2147483600; display: grid; place-items: center; padding: 20px;
+  background: rgba(20, 28, 40, .55);
+}
+.pf-onboard[hidden] { display: none; }
+.pf-ob-box {
+  width: min(920px, 100%); max-height: calc(100vh - 40px); overflow-y: auto;
+  background: var(--pf-bg); border-radius: 24px; padding: 24px 26px; border: 3px solid var(--pf-teal);
+  box-shadow: 0 20px 60px rgba(0, 0, 0, .3);
+}
+.pf-ob-head { display: grid; grid-template-columns: 110px 1fr auto; gap: 16px; align-items: center; margin-bottom: 18px; }
+.pf-ob-dog { width: 110px; }
+.pf-ob-dog .pf-dog-svg { width: 100%; height: auto; }
+.pf-ob-head h2 { margin: 0 0 6px; font-size: 1.6em; line-height: 1.2; color: var(--pf-ink); }
+.pf-ob-head p { margin: 0; color: var(--pf-muted); font-size: 1.05em; }
+.pf-ob-who:empty { display: none; }
+.pf-ob-who { margin-top: 6px !important; color: var(--pf-teal) !important; font-weight: 700; }
+.pf-ob-foot { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; margin-top: 20px; }
+.pf-ob-account { flex: 1; min-width: 200px; font-weight: 600; }
+.pf-ob-foot .pf-btn { min-height: 52px; padding: 10px 22px; font-size: 1.05em; }
+html.pf-ob-open .pf-dog { visibility: hidden; }
+@media (max-width: 640px) { .pf-ob-head { grid-template-columns: 1fr; } .pf-ob-dog { display: none; } }
+
+/* ---------- paste kit ---------- */
+.pf-kit h4 { margin: 0 0 4px; font-size: .95em; color: var(--pf-teal); }
+.pf-kit-text { font-size: .95em; background: #faf6ee; border-radius: 8px; padding: 8px 10px; }
+html.pf-hc .pf-kit-text { background: #111; }
+.pf-account-line { font-size: .92em; margin: 0 0 6px; }
+.pf-more { margin-top: 14px; }
+.pf-more summary { cursor: pointer; font-weight: 700; padding: 6px 0; }
+
+/* ---------- zoomed in / narrow screens: the panel becomes a bottom sheet ---------- */
+@media (max-width: 900px) {
+  .pf-panel { top: auto; left: 0; width: auto; height: 46vh; border-left: 0; border-top: 3px solid var(--pf-teal); box-shadow: 0 -6px 24px rgba(0,0,0,.15); }
+  html.pf-on:not(.pf-collapsed) body, html.pf-on.pf-large:not(.pf-collapsed) body { margin-right: 0; margin-bottom: 47vh; }
+  .pf-head { padding: 6px 10px; }
+  .pf-presets { display: none; }
+  .pf-tabs { grid-template-columns: repeat(6, auto); overflow-x: auto; padding: 6px 8px; }
+  .pf-tabs [role=tab] { white-space: nowrap; padding: 6px 10px; }
+  .pf-dog { width: 80px; height: 64px; }
+  html.pf-large .pf-dog { width: 96px; height: 77px; }
+  .pf-bubble { width: 200px; font-size: 13px; }
+}
+
+/* ---------- big-button mode: everything at least 44×44px ---------- */
+html.pf-large .pf-ui button, html.pf-large .pf-ui .pf-btn, html.pf-large .pf-tabs [role=tab], html.pf-large .pf-icon { min-height: 44px; min-width: 44px; }
+html.pf-large .pf-ui a { display: inline-block; min-height: 44px; padding: 8px 2px; }
+
+/* ---------- repairs: make the portal's faint text readable ---------- */
+html.pf-repair .portal { color: #3d4450; }
+html.pf-repair .portal .fine, html.pf-repair .portal .sub, html.pf-repair .portal .xs, html.pf-repair .portal .ftr,
+html.pf-repair .portal .nav, html.pf-repair .portal .notice, html.pf-repair .portal .h, html.pf-repair .portal .h3, html.pf-repair .portal .tbl th { color: #3d4450; }
+html.pf-repair .portal .lnk, html.pf-repair .portal .slot { color: #1f4f80; }
+html.pf-repair .portal .err { color: #a3221b; }
+html.pf-repair .portal .sess { color: #fff; }
+html.pf-repair .portal .btn { background: #2f5d8a; border-color: #23486c; }
+html.pf-repair .portal .tile b { color: #3d4450; }

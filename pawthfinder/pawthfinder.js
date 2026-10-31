@@ -24,35 +24,49 @@
     voice: {
       label: 'Voice', icon: '🎤',
       desc: 'I talk you through each step and listen for commands like “next”, “press it” or “type …”.',
-      values: { speak: true, listen: true, sounds: true, level: 1, oneStep: false, large: false, hc: false, dys: false, repair: true, focusFollow: false }
+      needs: ['voice', 'readAloud', 'sounds'], extra: { level: 1 }
     },
     cognitive: {
       label: 'Simple & steady', icon: '🌿',
       desc: 'Plain words, one small step at a time, bigger buttons. Take a rest stop whenever you like.',
-      values: { speak: false, listen: false, sounds: false, level: 2, oneStep: true, large: true, hc: false, dys: false, repair: true, focusFollow: false }
+      needs: ['plain', 'oneStep', 'large'], extra: {}
     },
     keyboard: {
       label: 'Keyboard & screen reader', icon: '⌨️',
       desc: 'I fix unlabeled boxes and mouse-only buttons, move focus to each step and announce it to your screen reader.',
-      values: { speak: false, listen: false, sounds: true, level: 1, oneStep: false, large: false, hc: false, dys: false, repair: true, focusFollow: true }
+      needs: ['keyboard', 'screenReader', 'sounds'], extra: { level: 1 }
     }
   };
   const DEFAULTS = {
     preset: 'custom', speak: false, listen: false, sounds: false, haptic: false, captions: true,
     level: 0, oneStep: false, large: false, hc: false, dys: false,
     rm: matchMedia('(prefers-reduced-motion: reduce)').matches,
-    repair: true, focusFollow: false, keepAlive: false, rate: 1, collapsed: false
+    repair: true, focusFollow: false, keepAlive: false, rate: 1, collapsed: false, needs: []
   };
+  const N = window.PF_NEEDS;
+  const presetSettings = (name, current) => Object.assign(N.settingsFor(PRESETS[name].needs, current), PRESETS[name].extra, { preset: name });
   const DEMO_PROFILE = {
     name: 'Jordan Rivera', username: 'jrivera', dob: '1984-03-09', memberId: 'XZP448120977',
     phone: '555-014-2290', email: 'jordan.rivera@example.com',
     doctors: 'Cardiology: Dr. Anita Patel\nPrimary Care: Dr. Grace Adeyemi',
     meds: 'Atorvastatin 20 mg at bedtime\nLisinopril 10 mg once a day',
-    acc: ['quiet', 'longer', 'plain'], accNotes: ''
+    acc: ['quiet', 'longer', 'plain'], accNotes: '', conditions: [], conditionsText: '', needs: []
   };
 
   const settings = Object.assign({}, DEFAULTS, store.get('settings', {}));
   const profile = Object.assign({}, DEMO_PROFILE, store.get('profile', {}));
+  // A Pawthfinder account (made on ../account/) lives on this device too.
+  function currentAccount() {
+    let email = null;
+    try { email = JSON.parse(sessionStorage.getItem('pf-session') || localStorage.getItem('pf-session') || 'null'); } catch (e) { /* none */ }
+    const all = store.get('accounts', {});
+    return email && all[email] ? all[email] : null;
+  }
+  const account = currentAccount();
+  if (account) {
+    ['name', 'email', 'phone', 'acc', 'accNotes', 'conditions', 'conditionsText', 'needs']
+      .forEach(k => { if (account[k] != null && account[k] !== '') profile[k] = account[k]; });
+  }
   let plan = store.get('plan', null);
 
   const state = {
@@ -326,12 +340,12 @@
           <div class="pf-hazards"></div>
         </section>
         <section class="pf-pane" role="tabpanel" id="pf-pane-translate" aria-labelledby="pf-tab-translate" hidden>
-          <fieldset class="pf-field">
-            <legend>Reading level</legend>
-            <label><input type="radio" name="pf-level" value="0"> Original words</label>
-            <label><input type="radio" name="pf-level" value="1"> Plain words <small>(jargon swapped out)</small></label>
-            <label><input type="radio" name="pf-level" value="2"> Simplest <small>(short, clear sentences)</small></label>
-          </fieldset>
+          <h3 class="pf-h3" id="pf-level-h">Reading level</h3>
+          <div class="pf-tiles pf-tiles-3" role="group" aria-labelledby="pf-level-h">
+            <button type="button" class="pf-tile" data-level="0" aria-pressed="false"><span class="pf-tile-icon" aria-hidden="true">📄</span><span class="pf-tile-label">Original</span><span class="pf-tile-desc">As the website wrote it</span></button>
+            <button type="button" class="pf-tile" data-level="1" aria-pressed="false"><span class="pf-tile-icon" aria-hidden="true">💡</span><span class="pf-tile-label">Plain words</span><span class="pf-tile-desc">Jargon swapped out</span></button>
+            <button type="button" class="pf-tile" data-level="2" aria-pressed="false"><span class="pf-tile-icon" aria-hidden="true">📖</span><span class="pf-tile-label">Simplest</span><span class="pf-tile-desc">Short, clear sentences</span></button>
+          </div>
           <div class="pf-row pf-wrap">
             <button type="button" class="pf-btn" data-do="read">Read page aloud</button>
             <button type="button" class="pf-btn" data-do="summary">Summarize page</button>
@@ -345,6 +359,9 @@
           <p class="pf-help">I can fill boxes from your profile. I always show you what I’ll fill first, I never fill passwords, and I never agree to things for you.</p>
           <button type="button" class="pf-btn pf-primary" data-do="fill">Fill this page from my profile</button>
           <div class="pf-fill"></div>
+          <h3 class="pf-h3">My needs, ready to paste</h3>
+          <p class="pf-help">Click in any box on the website, then press “Put it in that box” — or copy it and paste it yourself.</p>
+          <div class="pf-paste"></div>
           <details class="pf-profile">
             <summary>My profile <small>(stored only on this device)</small></summary>
             <form class="pf-profile-form">
@@ -361,10 +378,10 @@
         </section>
         <section class="pf-pane" role="tabpanel" id="pf-pane-speak" aria-labelledby="pf-tab-speak" hidden>
           <p class="pf-help">I can write a request for the help you need at your visit, or a card to send the clinic before you go.</p>
-          <fieldset class="pf-field pf-acc">
-            <legend>What would help you?</legend>
-            ${K.accommodations.map(([k, l]) => `<label><input type="checkbox" value="${k}"> ${l}</label>`).join('')}
-          </fieldset>
+          <h3 class="pf-h3" id="pf-acc-h">What would help you at the visit?</h3>
+          <div class="pf-tiles pf-tiles-sm pf-acc" role="group" aria-labelledby="pf-acc-h">
+            ${K.accommodations.map(([k, l]) => `<button type="button" class="pf-tile" data-acc="${k}" aria-pressed="false"><span class="pf-tile-icon" aria-hidden="true">${N.accIcons[k] || '✔️'}</span><span class="pf-tile-label">${l}</span></button>`).join('')}
+          </div>
           <label class="pf-block">Anything else they should know?<textarea class="pf-acc-notes" rows="2"></textarea></label>
           <div class="pf-row pf-wrap">
             <button type="button" class="pf-btn pf-primary" data-do="letter">Write my request</button>
@@ -379,19 +396,18 @@
         </section>
         <section class="pf-pane" role="tabpanel" id="pf-pane-settings" aria-labelledby="pf-tab-settings" hidden>
           <p class="pf-help pf-preset-desc"></p>
-          <fieldset class="pf-field pf-toggles">
-            <legend>How I talk and listen</legend>
-            ${toggle('speak', 'Read steps aloud')}${toggle('listen', 'Listen for voice commands')}
-            ${toggle('captions', 'Show my speech bubble (captions)')}${toggle('sounds', 'Chimes and barks')}${toggle('haptic', 'Vibrate on new steps (phones)')}
-            <label class="pf-range">Speaking speed <input type="range" min="0.6" max="1.6" step="0.1" data-set="rate"></label>
-          </fieldset>
-          <fieldset class="pf-field pf-toggles">
-            <legend>How the page looks and works</legend>
-            ${toggle('oneStep', 'One step at a time')}${toggle('large', 'Bigger text and buttons')}${toggle('hc', 'High contrast')}
-            ${toggle('dys', 'Dyslexia-friendly text')}${toggle('rm', 'Reduce motion')}
-            ${toggle('repair', 'Fix labels and keyboard access on this site')}${toggle('focusFollow', 'Move keyboard focus to each step')}
-            ${toggle('keepAlive', 'Keep me signed in')}
-          </fieldset>
+          <p class="pf-account-line"></p>
+          <h3 class="pf-h3" id="pf-needs-h">What helps you?</h3>
+          <div class="pf-tiles pf-tiles-sm" role="group" aria-labelledby="pf-needs-h">${needTiles()}</div>
+          <details class="pf-more">
+            <summary>More options</summary>
+            <fieldset class="pf-field pf-toggles">
+              <legend>Fine-tuning</legend>
+              ${toggle('captions', 'Show my speech bubble (captions)')}${toggle('haptic', 'Vibrate on new steps (phones)')}
+              ${toggle('repair', 'Fix labels and keyboard access on this site')}${toggle('focusFollow', 'Move keyboard focus to each step')}
+              <label class="pf-range">Speaking speed <input type="range" min="0.6" max="1.6" step="0.1" data-set="rate"></label>
+            </fieldset>
+          </details>
           <h3 class="pf-h3">Keyboard shortcuts</h3>
           <ul class="pf-keys">
             <li><kbd>Alt</kbd>+<kbd>Shift</kbd>+<kbd>N</kbd> go to the current step</li>
@@ -406,10 +422,33 @@
         </section>
       </div>
     </aside>
+    <div class="pf-onboard" role="dialog" aria-modal="true" aria-labelledby="pf-ob-title" aria-describedby="pf-ob-desc" hidden>
+      <div class="pf-ob-box">
+        <div class="pf-ob-head">
+          <div class="pf-ob-dog" aria-hidden="true">${window.PF_DOG_SVG}</div>
+          <div>
+            <h2 id="pf-ob-title">Hi, I’m Pawthfinder. What helps you use websites?</h2>
+            <p id="pf-ob-desc">Pick everything that helps — or nothing at all. You can change this any time.</p>
+            <p class="pf-ob-who"></p>
+          </div>
+          <button type="button" class="pf-btn pf-ob-read"><span aria-hidden="true">🔊</span> Read this to me</button>
+        </div>
+        <div class="pf-tiles pf-ob-tiles" role="group" aria-label="What helps you">${needTiles()}</div>
+        <div class="pf-ob-foot">
+          <a class="pf-ob-account" href="../account/login.html?return=portal">Have a Pawthfinder account? Sign in to load your choices</a>
+          <button type="button" class="pf-btn pf-ob-skip">Skip for now</button>
+          <button type="button" class="pf-btn pf-primary pf-ob-start">Start <span aria-hidden="true">🐾</span></button>
+        </div>
+      </div>
+    </div>
     <div class="pf-sr" role="status" aria-live="polite"></div>
     <div class="pf-sr" role="alert" aria-live="assertive"></div>`;
   document.body.appendChild(ui);
 
+  function needTiles() {
+    return N.features.map(f => `<button type="button" class="pf-tile" data-need="${f.id}" aria-pressed="false">
+      <span class="pf-tile-icon" aria-hidden="true">${f.icon}</span><span class="pf-tile-label">${f.label}</span><span class="pf-tile-desc">${f.desc}</span></button>`).join('');
+  }
   function toggle(k, label) {
     return `<label class="pf-switch"><input type="checkbox" data-set="${k}"> <span>${label}</span></label>`;
   }
@@ -727,13 +766,17 @@
   const DOG_W = () => (settings.large ? 132 : 110), DOG_H = () => (settings.large ? 106 : 88);
   let lastXY = [0, 0];
   function positionDog() {
-    const panelLeft = settings.collapsed ? window.innerWidth : el.panel.getBoundingClientRect().left;
+    // The panel is a side column on wide screens and a bottom sheet when zoomed in or narrow.
+    const pr = el.panel.getBoundingClientRect();
+    const docked = !settings.collapsed && pr.height > 0;
+    const panelLeft = docked && pr.top < 10 ? pr.left : window.innerWidth;
+    const floorY = docked && pr.top >= 10 ? pr.top : window.innerHeight;
     const t = state.target && visible(state.target) && !state.resting ? state.target : null;
     let x, y, face = 1;
     if (!t) {
       el.ring.hidden = true;
       x = panelLeft - DOG_W() - 24;
-      y = window.innerHeight - DOG_H() - 18;
+      y = floorY - DOG_H() - 18;
       face = -1;
     } else {
       const r = t.getBoundingClientRect();
@@ -742,7 +785,7 @@
       x = r.left - DOG_W() - 10;
       if (x < 6) { x = r.right + 10; face = -1; }
       x = Math.min(x, panelLeft - DOG_W() - 6);
-      y = Math.max(8, Math.min(window.innerHeight - DOG_H() - 8, r.top + r.height / 2 - DOG_H() * 0.62));
+      y = Math.max(8, Math.min(floorY - DOG_H() - 8, r.top + r.height / 2 - DOG_H() * 0.62));
     }
     const moved = Math.hypot(x - lastXY[0], y - lastXY[1]) > 40;
     lastXY = [x, y];
@@ -1153,7 +1196,7 @@
     if (a.when) store.set('appt', a);
   }
   function selectedAcc() {
-    return $$('.pf-acc input:checked', ui).map(i => K.accommodations.find(([k]) => k === i.value)[1]);
+    return K.accommodations.filter(([k]) => (profile.acc || []).includes(k)).map(([, l]) => l);
   }
   function letterFor(kind) {
     const P = profile, date = new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
@@ -1202,6 +1245,103 @@
       .catch(() => say('I couldn’t copy automatically. Select the text and copy it yourself.', { ms: 4000 }));
   }
 
+  function renderPasteKit() {
+    const box = $('.pf-paste', ui);
+    if (!box) return;
+    const kit = N.pasteKit(Object.assign({}, profile, { needs: profile.needs && profile.needs.length ? profile.needs : settings.needs }));
+    box.__kit = kit;
+    box.innerHTML = kit.length ? kit.map(k => `
+      <div class="pf-card pf-kit">
+        <h4>${esc(k.title)}</h4>
+        <p class="pf-kit-text">${esc(k.text).replace(/\n/g, '<br>')}</p>
+        <div class="pf-row pf-wrap">
+          <button type="button" class="pf-btn pf-primary" data-paste="${k.id}">Put it in that box</button>
+          <button type="button" class="pf-btn" data-copykit="${k.id}">Copy</button>
+        </div>
+      </div>`).join('')
+      : `<p class="pf-help">Pick what helps you in “Speak up”, or <a href="../account/signup.html?return=portal">make an account</a> with your needs, and they’ll show up here.</p>`;
+  }
+  function pasteInto(id) {
+    const kit = $('.pf-paste', ui).__kit || [];
+    const k = kit.find(x => x.id === id) || kit[0];
+    if (!k) { say('I don’t know your needs yet. Pick them in “Speak up” first.', { ms: 4000 }); return; }
+    const f = state.lastFocusHint && F.fields().find(x => fieldHint(x) === state.lastFocusHint && x.matches('textarea, input:not([type=radio]):not([type=checkbox]):not([type=password])'));
+    if (!f) { say('Click in a box on the website first, then press this again.', { ms: 4000 }); return; }
+    setValue(f, f.value ? f.value.replace(/\s*$/, ' ') + k.text : k.text);
+    f.classList.add('pf-filled');
+    f.focus();
+    say(`I put your needs in the “${f.getAttribute('aria-label') || 'selected'}” box. Please check it.`, { ms: 5000 });
+  }
+  ui.addEventListener('click', e => {
+    const p = e.target.closest('[data-paste]');
+    if (p) pasteInto(p.dataset.paste);
+    const c = e.target.closest('[data-copykit]');
+    if (c) { const k = ($('.pf-paste', ui).__kit || []).find(x => x.id === c.dataset.copykit); if (k) copy(k.text); }
+  });
+
+  // ---------- session-start picker ----------
+  const ob = $('.pf-onboard', ui);
+  let obPicked = new Set();
+  function openOnboarding() {
+    const start = account && account.needs ? account.needs
+      : settings.needs && settings.needs.length ? settings.needs
+      : PRESETS[settings.preset] ? PRESETS[settings.preset].needs : [];
+    obPicked = new Set(start);
+    renderObTiles();
+    $('.pf-ob-who', ob).textContent = account ? `Welcome back, ${account.name || account.email}! I picked the choices saved in your account.` : '';
+    $('.pf-ob-account', ob).hidden = !!account;
+    ob.hidden = false;
+    portal.inert = true;
+    el.panel.inert = true;
+    document.documentElement.classList.add('pf-ob-open');
+    setTimeout(() => $('.pf-tile', ob).focus(), 50);
+  }
+  function renderObTiles() {
+    $$('[data-need]', ob).forEach(b => b.setAttribute('aria-pressed', String(obPicked.has(b.dataset.need))));
+    $('.pf-ob-start', ob).innerHTML = obPicked.size ? `Start with ${obPicked.size} choice${obPicked.size > 1 ? 's' : ''} <span aria-hidden="true">🐾</span>` : 'Start <span aria-hidden="true">🐾</span>';
+  }
+  function closeOnboarding(apply) {
+    try { sessionStorage.setItem('pf-onboarded', '1'); } catch (e) { /* private mode */ }
+    ob.hidden = true;
+    portal.inert = false;
+    el.panel.inert = false;
+    document.documentElement.classList.remove('pf-ob-open');
+    if (apply) {
+      const ids = [...obPicked];
+      const match = Object.keys(PRESETS).find(k => PRESETS[k].needs.length === ids.length && PRESETS[k].needs.every(n => ids.includes(n)));
+      applyNeeds(ids, match);
+      if (match) { Object.assign(settings, PRESETS[match].extra); saveSettings(); }
+      clearNotice('start-voice');
+      const names = N.features.filter(f => ids.includes(f.id)).map(f => f.label.toLowerCase());
+      say(names.length ? `Got it: ${names.join(', ')}. Now tell me what you want to do.` : 'Okay! Tell me what you want to do.', { ms: 6000, forceSpeak: ids.includes('voice') || ids.includes('readAloud') });
+    }
+    renderPasteKit();
+    el.cmd.focus();
+  }
+  $$('[data-need]', ob).forEach(b => b.addEventListener('click', () => {
+    const id = b.dataset.need;
+    obPicked.has(id) ? obPicked.delete(id) : obPicked.add(id);
+    renderObTiles();
+    // Preview the look right away so people can tell what each one does.
+    if (['large', 'hc', 'dys', 'rm'].includes(id)) document.documentElement.classList.toggle('pf-' + id, obPicked.has(id));
+    const f = N.features.find(x => x.id === id);
+    live(`${f.label}: ${obPicked.has(id) ? 'picked' : 'not picked'}`);
+  }));
+  $('.pf-ob-start', ob).addEventListener('click', () => closeOnboarding(true));
+  $('.pf-ob-skip', ob).addEventListener('click', () => { applyModes(); closeOnboarding(false); });
+  $('.pf-ob-read', ob).addEventListener('click', () => {
+    speak('What helps you use websites? Pick everything that helps. Press Tab to move between choices and Space to pick one. The choices are: ' +
+      N.features.map((f, i) => `${i + 1}. ${f.label}.`).join(' ') + ' When you are done, press Start.', true, true);
+  });
+  ob.addEventListener('keydown', e => {
+    if (e.key === 'Escape') { e.preventDefault(); applyModes(); closeOnboarding(false); return; }
+    if (e.key !== 'Tab') return;
+    const items = $$('button, a[href]', ob).filter(x => !x.hidden && x.offsetParent !== null);
+    const first = items[0], last = items[items.length - 1];
+    if (e.shiftKey && document.activeElement === first) { e.preventDefault(); last.focus(); }
+    else if (!e.shiftKey && document.activeElement === last) { e.preventDefault(); first.focus(); }
+  });
+
   // ---------- rest stops ----------
   function restStop() {
     store.set('rest', { at: Date.now() });
@@ -1243,6 +1383,7 @@
     if (/(take a break|rest stop|\brest\b|pause|i'?m tired)/.test(l)) return restStop();
     if (/^(resume|pick up|i'?m back|keep going)/.test(l)) return resume();
     if (/^(bigger|larger|zoom)/.test(l)) return setSetting('large', true, 'Bigger text and buttons on.');
+    if (/^paste( my)? (needs|accessibility)/.test(l)) return pasteInto('short');
     if (/^(fill|fetch)/.test(l)) return previewFill();
     const g = parseGoal(t);
     if (g) return startPlan(g);
@@ -1302,9 +1443,18 @@
     if (msg) say(msg, { ms: 4000 });
     tick();
   }
+  function applyNeeds(ids, preset) {
+    const wasListening = settings.listen;
+    Object.assign(settings, N.settingsFor(ids, settings), { preset: preset || 'custom' });
+    if (!settings.repair) unrepair();
+    saveSettings();
+    if (settings.listen && !wasListening) startListening();
+    if (!settings.listen && wasListening) stopListening();
+    tick();
+  }
   function applyPreset(name) {
     const p = PRESETS[name];
-    Object.assign(settings, p.values, { preset: name });
+    Object.assign(settings, presetSettings(name, settings));
     saveSettings();
     tick();
     if (settings.listen) startListening(); else stopListening();
@@ -1320,6 +1470,7 @@
     h.toggle('pf-large', settings.large);
     h.toggle('pf-dys', settings.dys);
     h.toggle('pf-rm', settings.rm);
+    h.toggle('pf-repair', settings.repair);
     h.toggle('pf-collapsed', settings.collapsed);
     if (!settings.captions) el.bubble.hidden = true;
   }
@@ -1328,7 +1479,12 @@
       if (i.type === 'checkbox') i.checked = !!settings[i.dataset.set];
       else i.value = settings[i.dataset.set];
     });
-    $$('input[name=pf-level]', ui).forEach(r => { r.checked = +r.value === +settings.level; });
+    $$('[data-level]', ui).forEach(b => b.setAttribute('aria-pressed', String(+b.dataset.level === +settings.level)));
+    $$('.pf-panel [data-need]', ui).forEach(b => b.setAttribute('aria-pressed', String((settings.needs || []).includes(b.dataset.need))));
+    const line = $('.pf-account-line', ui);
+    if (line) line.innerHTML = account
+      ? `Signed in as <strong>${esc(account.name || account.email)}</strong> · <a href="../account/profile.html">My account</a>`
+      : `<a href="../account/login.html?return=portal">Sign in</a> or <a href="../account/signup.html?return=portal">make a free account</a> to save your choices.`;
     $$('.pf-preset', ui).forEach(b => b.setAttribute('aria-pressed', String(b.dataset.preset === settings.preset)));
     const p = PRESETS[settings.preset];
     $('.pf-preset-desc', ui).textContent = p ? `${p.label} mode: ${p.desc} Change anything below.` : 'Custom mode. Mix and match anything below — or pick a mode at the top.';
@@ -1370,7 +1526,14 @@
   $('.pf-collapse', ui).addEventListener('click', () => { setSetting('collapsed', true); el.fab.focus(); });
   el.fab.addEventListener('click', () => { setSetting('collapsed', false); el.cmd.focus(); });
   $$('[data-set]', ui).forEach(i => i.addEventListener('change', () => setSetting(i.dataset.set, i.type === 'checkbox' ? i.checked : +i.value)));
-  $$('input[name=pf-level]', ui).forEach(r => r.addEventListener('change', () => setLevel(+r.value, true)));
+  $$('[data-level]', ui).forEach(b => b.addEventListener('click', () => setLevel(+b.dataset.level, true)));
+  $$('.pf-panel [data-need]', ui).forEach(b => b.addEventListener('click', () => {
+    const ids = new Set(settings.needs || []);
+    ids.has(b.dataset.need) ? ids.delete(b.dataset.need) : ids.add(b.dataset.need);
+    applyNeeds([...ids]);
+    const f = N.features.find(x => x.id === b.dataset.need);
+    say(`${f.label}: ${ids.has(f.id) ? 'on' : 'off'}.`, { ms: 2500 });
+  }));
 
   const DO = {
     show: showMe, repeat: () => announceStep(true), press: pressIt, end: endPlan, resume,
@@ -1413,10 +1576,16 @@
     state.steps = buildSteps(plan);
     say('Profile saved on this device.', { ms: 3000 });
   });
-  $$('.pf-acc input', ui).forEach(i => {
-    i.checked = (profile.acc || []).includes(i.value);
-    i.addEventListener('change', () => { profile.acc = $$('.pf-acc input:checked', ui).map(x => x.value); store.set('profile', profile); });
-  });
+  function renderAccTiles() { $$('[data-acc]', ui).forEach(b => b.setAttribute('aria-pressed', String((profile.acc || []).includes(b.dataset.acc)))); }
+  $$('[data-acc]', ui).forEach(b => b.addEventListener('click', () => {
+    const k = b.dataset.acc, acc = new Set(profile.acc || []);
+    acc.has(k) ? acc.delete(k) : acc.add(k);
+    profile.acc = [...acc];
+    store.set('profile', profile);
+    renderAccTiles();
+    renderPasteKit();
+  }));
+  renderAccTiles();
   $('.pf-acc-notes', ui).value = profile.accNotes || '';
   $('.pf-acc-notes', ui).addEventListener('change', e => { profile.accNotes = e.target.value; store.set('profile', profile); });
   el.letter.value = store.get('letter', '');
@@ -1471,7 +1640,7 @@
 
   // ---------- start ----------
   if (q.get('mode') && PRESETS[q.get('mode')]) {
-    Object.assign(settings, PRESETS[q.get('mode')].values, { preset: q.get('mode') });
+    Object.assign(settings, presetSettings(q.get('mode'), settings));
     q.delete('mode');
     history.replaceState(null, '', location.pathname + (q.toString() ? '?' + q : '') + location.hash);
     store.set('settings', settings);
@@ -1479,8 +1648,12 @@
   applyModes();
   renderSettings();
   loadProfileForm();
+  renderPasteKit();
   if (plan) state.steps = buildSteps(plan);
   tick();
+  let onboarded = q.get('onboard') === '0';
+  try { onboarded = onboarded || sessionStorage.getItem('pf-onboarded') === '1'; } catch (e) { /* private mode */ }
+  if (!onboarded) openOnboarding();
   if (state.resting) {
     dogMood('sleep');
     const r = store.get('rest', {});
@@ -1489,7 +1662,7 @@
   } else if (!plan) {
     const p = PRESETS[settings.preset];
     bubble(p ? `Hi! I’m Pawthfinder. ${settings.preset === 'voice' ? 'Press the microphone and tell me what you want to do.' : 'What do you want to do today?'}` : 'Hi! I’m Pawthfinder, your guide dog for this website. What do you want to do?');
-    if (settings.listen) {
+    if (settings.listen && onboarded) {
       // Browsers need a click before using the microphone or speaking.
       notice('start-voice', 'Voice mode is ready. Press start, then tell me what you want to do.', 'info', [{ label: '🎤 Start talking', fn: () => { startListening(); applyPreset('voice'); } }]);
     }
