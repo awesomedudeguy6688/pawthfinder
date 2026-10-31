@@ -1,0 +1,35 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=1024">
+<title>MyHealthLink</title>
+<link rel="stylesheet" href="portal.css">
+</head>
+<body>
+<!--
+  MyHealthLink is a mock patient portal that is inaccessible on purpose:
+  tiny mouse-only "buttons", unlabeled fields, jargon, a hidden session timeout,
+  a mouse-only robot check, a scanned PDF and a phone-only workflow.
+  Pawthfinder (../pawthfinder/) runs on top of it like a browser extension would.
+-->
+<div class="portal" id="portal"><div id="app"></div></div>
+<script src="portal.js"></script>
+<script>
+  // Stands in for the browser extension being installed. Add ?pf=0 to see the portal on its own.
+  (function () {
+    if (new URLSearchParams(location.search).get('pf') === '0') return;
+    var css = document.createElement('link');
+    css.rel = 'stylesheet';
+    css.href = '../pawthfinder/pawthfinder.css';
+    document.head.appendChild(css);
+    ['../pawthfinder/dog.js', '../pawthfinder/knowledge.js', '../pawthfinder/pawthfinder.js'].forEach(function (src) {
+      var s = document.createElement('script');
+      s.src = src;
+      s.async = false;
+      document.body.appendChild(s);
+    });
+  })();
+</script>
+</body>
+</html>

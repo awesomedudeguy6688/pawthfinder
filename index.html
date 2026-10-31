@@ -1,0 +1,152 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Pawthfinder — a guide dog for medical websites</title>
+<meta name="description" content="A browser extension with an animated guide dog that leads disabled users through patient portals: plain language, hazard warnings, voice, keyboard and step-by-step guidance.">
+<link rel="stylesheet" href="site.css">
+</head>
+<body>
+<a class="skip" href="#main">Skip to main content</a>
+
+<header class="top">
+  <nav class="wrap nav" aria-label="Main">
+    <a class="logo" href="#"><span aria-hidden="true">🐾</span> Pawthfinder</a>
+    <ul>
+      <li><a href="#why">Why</a></li>
+      <li><a href="#demo">Demo</a></li>
+      <li><a href="#skills">Skills</a></li>
+      <li><a href="#how">How it works</a></li>
+    </ul>
+  </nav>
+</header>
+
+<main id="main">
+  <section class="hero">
+    <div class="wrap hero-grid">
+      <div>
+        <p class="eyebrow">Accessibility for the medical care system</p>
+        <h1>A guide dog for medical websites.</h1>
+        <p class="lede">Pawthfinder is a browser extension that lives on patient portals. It reads what’s on the page and leads you through it — by voice, keyboard, or one small step at a time. It warns you about obstacles before you reach them.</p>
+        <p class="lede"><strong>It leads. You stay in control.</strong></p>
+        <div class="ctas">
+          <a class="btn primary" href="#demo">Try the live demo</a>
+          <a class="btn" href="portal/?pf=0&amp;reset=1">See the portal without it</a>
+        </div>
+      </div>
+      <div class="hero-dog" aria-hidden="true">
+        <div class="bubble">Heads up! This site signs you out in 4 minutes. Want me to keep you signed in?</div>
+        <div class="dog" id="hero-dog"></div>
+      </div>
+    </div>
+  </section>
+
+  <section id="why" class="band">
+    <div class="wrap">
+      <h2>Patient portals are where care happens now — and many of them shut people out.</h2>
+      <div class="stats">
+        <div class="stat">
+          <p class="big">1 in 4</p>
+          <p>US adults lives with a disability.<br><a href="https://www.cdc.gov/disability-and-health/articles-documents/disability-impacts-all-of-us-infographic.html">Source: CDC</a></p>
+        </div>
+        <div class="stat">
+          <p class="big">Booking, refills, results, bills</p>
+          <p>are moving online first. When the portal doesn’t work for you, getting care gets harder.</p>
+        </div>
+        <div class="stat">
+          <p class="big">0 changes</p>
+          <p>are needed from hospitals. Pawthfinder works on the portals that exist today.</p>
+        </div>
+      </div>
+      <p class="note">The usual barriers: tiny mouse-only buttons, boxes with no labels, jargon like “F/U – EST PT” and “ABN”, sessions that sign you out with no warning, scanned PDFs, robot checks, and tasks that need a phone call.</p>
+    </div>
+  </section>
+
+  <section id="demo" class="wrap section">
+    <h2>One portal. One goal. Three different people.</h2>
+    <p class="section-lede">We built <strong>MyHealthLink</strong>, a mock patient portal with those barriers built in on purpose. The goal in every demo is the same: <em>“Book a follow-up with my cardiologist.”</em> Pick who you want to be:</p>
+    <div class="personas">
+      <article class="persona">
+        <div class="p-icon" aria-hidden="true">🎤</div>
+        <h3>Sam uses voice only</h3>
+        <p>Sam can’t use a mouse or keyboard. Pawthfinder talks Sam through each step and acts on commands like <q>press it</q>, <q>choose Dr. Patel</q> or <q>type follow-up visit</q>.</p>
+        <a class="btn primary" href="portal/?reset=1&amp;mode=voice">Start as Sam</a>
+        <p class="hint">Works best in Chrome or Edge with a microphone. You can also type the commands.</p>
+      </article>
+      <article class="persona">
+        <div class="p-icon" aria-hidden="true">🌿</div>
+        <h3>Riley has brain-fog days</h3>
+        <p>Riley needs plain words and small steps. Pawthfinder rewrites the jargon, shows one step at a time, makes the buttons big, and offers rest stops that save Riley’s place.</p>
+        <a class="btn primary" href="portal/?reset=1&amp;mode=cognitive">Start as Riley</a>
+      </article>
+      <article class="persona">
+        <div class="p-icon" aria-hidden="true">⌨️</div>
+        <h3>Alex uses a keyboard and a screen reader</h3>
+        <p>Alex can’t use the portal’s mouse-only buttons or unlabeled boxes. Pawthfinder fixes them, moves focus to each step, and announces it to the screen reader.</p>
+        <a class="btn primary" href="portal/?reset=1&amp;mode=keyboard">Start as Alex</a>
+      </article>
+    </div>
+    <details class="tips">
+      <summary>Tips for running the demo</summary>
+      <ul>
+        <li>Any username and password work on the mock portal.</li>
+        <li>Add <code>&amp;session=45</code> to a demo link to make the portal’s hidden timeout hit after 45 seconds. Watch Pawthfinder warn you, keep you signed in, or put your answers back.</li>
+        <li>Toggle <strong>“See this site without Pawthfinder”</strong> in the dog’s <em>Stay close</em> tab for an instant before-and-after.</li>
+        <li>Other goals to try: <q>Refill my cholesterol medicine</q> and <q>Understand my test results</q>.</li>
+        <li>Shortcuts: <kbd>Alt</kbd>+<kbd>Shift</kbd>+<kbd>N</kbd> goes to the current step, <kbd>Alt</kbd>+<kbd>Shift</kbd>+<kbd>R</kbd> repeats it.</li>
+      </ul>
+    </details>
+  </section>
+
+  <section id="skills" class="band alt">
+    <div class="wrap">
+      <h2>The dog’s skills</h2>
+      <div class="skills">
+        <article class="skill"><h3><span aria-hidden="true">🦮</span> Lead</h3><p>Say your goal in your own words. The dog breaks it into steps, points at each next action, and re-plans if you wander off the path.</p></article>
+        <article class="skill"><h3><span aria-hidden="true">👃</span> Sniff ahead</h3><p>Warns you about hidden time limits, robot checks, unreadable PDFs, unlabeled boxes and phone-only tasks <em>before</em> you get there — with a way around each one.</p></article>
+        <article class="skill"><h3><span aria-hidden="true">💬</span> Translate</h3><p>Rewrites jargon, insurance terms and consent text at the reading level you pick. Reads aloud, summarizes, and explains each tricky word.</p></article>
+        <article class="skill"><h3><span aria-hidden="true">🎾</span> Fetch</h3><p>Fills repeated forms from a profile you control. It always shows what it will fill first, never fills passwords, and never agrees to anything for you.</p></article>
+        <article class="skill"><h3><span aria-hidden="true">📣</span> Speak up</h3><p>Drafts accommodation requests (an ASL interpreter, a quiet room, a longer visit, an exam table that lowers) and a printable accessibility card for the clinic.</p></article>
+        <article class="skill"><h3><span aria-hidden="true">🤝</span> Stay close</h3><p>Voice, keyboard-only, large targets, high contrast, reduced motion, captions, dyslexia-friendly text. Switch freely. The dog uses chimes, barks, vibration or pointing to match.</p></article>
+        <article class="skill"><h3><span aria-hidden="true">💤</span> Rest stops</h3><p>Take a break anytime. Your place and answers are saved on your device, so you can pick up where you left off, even if the portal signs you out.</p></article>
+      </div>
+    </div>
+  </section>
+
+  <section class="wrap section principles">
+    <h2>Assist, don’t replace</h2>
+    <p class="section-lede">A guide dog doesn’t take over. It leads, warns, and lets the person decide. Pawthfinder follows the same rules:</p>
+    <ul class="rules">
+      <li><strong>It points, you press.</strong> It only clicks when you ask (“press it for me”).</li>
+      <li><strong>Your decisions stay yours.</strong> It explains consent and payment agreements but never ticks them for you.</li>
+      <li><strong>No surprises.</strong> It shows everything it will fill before filling, and outlines what it changed.</li>
+      <li><strong>Your health data stays with you.</strong> Profile, progress and saved answers live only in your browser. Passwords are never stored.</li>
+    </ul>
+  </section>
+
+  <section id="how" class="band">
+    <div class="wrap">
+      <h2>How it works</h2>
+      <ol class="arch">
+        <li><h3>Page understanding</h3><p>Reads the DOM and accessibility tree to find headings, fields and buttons by what they <em>say</em>, even on messy, non-semantic sites.</p></li>
+        <li><h3>Task planner</h3><p>Turns a goal into steps across several pages, checks which step you’re on after every change, and re-plans when a page isn’t what it expected.</p></li>
+        <li><h3>Audit engine</h3><p>Checks for missing labels, mouse-only controls, tiny targets, timeouts, PDFs and phone-only steps, then repairs what it can right on the page.</p></li>
+        <li><h3>Multimodal I/O</h3><p>Speech in and out, screen-reader announcements, keyboard shortcuts, sound and vibration cues, and a speech bubble that doubles as captions.</p></li>
+        <li><h3>Privacy by default</h3><p>Everything is stored on the device. No account and no server are needed for the core features.</p></li>
+      </ol>
+      <p class="note">In this hackathon demo, page understanding and plain-language rewriting use rules and a hand-made glossary, so the demo runs offline and gives the same result every time. The production design adds an LLM for unfamiliar portals and free-form rewriting, with health data removed or kept on the device.</p>
+    </div>
+  </section>
+</main>
+
+<footer class="foot">
+  <div class="wrap">
+    <p><span aria-hidden="true">🐾</span> Pawthfinder — a hackathon project on accessibility tools for navigating the medical care system. MyHealthLink is fictional; no real patient data is used.</p>
+  </div>
+</footer>
+
+<script src="pawthfinder/dog.js"></script>
+<script>document.getElementById('hero-dog').innerHTML = window.PF_DOG_SVG;</script>
+</body>
+</html>
